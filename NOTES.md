@@ -110,19 +110,22 @@
 - **`config.toml`** gerado por `supabase init` tem `project_id = "CroKoAI"` e `[db.seed]` →
   `./seed.sql`. Versionado. `supabase/.gitignore` (gerado) ignora `.branches`/`.temp`/`.env*.local`.
 
-### Remoto Supabase — artefato pré-existente `rls_auto_enable()` (decisão pendente)
+### Remoto Supabase — artefato pré-existente `rls_auto_enable()` (ORIGEM CONFIRMADA · decidido: MANTER)
 
-- O projeto remoto **CrokoAI** já vinha com um **event trigger `ensure_rls`** (em `ddl_command_end`)
-  que chama a função **`public.rls_auto_enable()`** (`SECURITY DEFINER`). **NÃO** foi criada pelas
-  nossas migrations — provável template/tooling. Auto-habilita RLS em tabelas novas (redundante p/
-  nós, que já fazemos `enable row level security` por tabela). Os 6 event triggers padrão do
-  Supabase (`pgrst_*`, `issue_pg_*`, `issue_graphql_placeholder`) continuam intactos; o `ensure_rls`
-  é o **único extra**.
-- Advisor aponta 2 WARN: a função é executável por `anon`/`authenticated` via `/rest/v1/rpc/
-  rls_auto_enable`. **Risco prático ≈ nulo** (chamar função de event trigger fora de contexto de
-  trigger gera erro), mas viola least-privilege. **Não removi/alterei** (criada nos últimos 7 dias e
-  não por mim → exige aprovação). Opções p/ a usuária: (1) manter como está; (2) revogar EXECUTE de
-  anon/authenticated/public (silencia o WARN, mantém o helper); (3) remover trigger+função.
+- **O que é:** event trigger `ensure_rls` (`ddl_command_end`) → função `public.rls_auto_enable()`
+  (`SECURITY DEFINER`, dono `postgres`, `SET search_path TO 'pg_catalog'`). A cada `CREATE TABLE`/
+  `CREATE TABLE AS`/`SELECT INTO` no schema `public`, roda `alter table ... enable row level
+  security`. É uma **rede de segurança auto-RLS**. **NÃO** veio das nossas migrations.
+- **Origem confirmada (2026-06-23):** é um **padrão da org inteira** — a função+trigger existem nos
+  **3 projetos ativos**: CrokoAI, **CrokoAds** e **MadameClub** (55 tabelas). Logo é convenção
+  aplicada em todo projeto Supabase da usuária, não algo plantado só aqui. Os 6 event triggers padrão
+  do Supabase (`pgrst_*`, `issue_pg_*`, `issue_graphql_placeholder`) seguem intactos; `ensure_rls` é
+  o único extra.
+- **Advisor WARN (0028/0029):** "executável por anon/authenticated via REST". **Falso-positivo
+  prático:** função de event trigger só roda em contexto de trigger; chamada via `/rest/v1/rpc/...`
+  gera erro — sem escalonamento.
+- **Decisão da usuária: MANTER como está** (consistência com CrokoAds/MadameClub). Não alterado.
+  O WARN permanecerá nos advisors por design; documentado aqui como decisão consciente.
 
 ### MCP disponíveis nesta sessão (claude.ai) — crítico p/ Waves 2+
 
