@@ -1,0 +1,17 @@
+{
+  "$comment": "Catálogo de produtos como arquivos (ADR 0014). Índice <cliente>/<slug> -> brief em produtos/<slug>.json. Placeholders do template. Money em inteiro de centavos; objective fixo em OUTCOME_TRAFFIC nesta onda.",
+  "products": [
+    {
+      "client_slug": "cliente-exemplo",
+      "product_slug": "curso-exemplo",
+      "name": "Curso Exemplo",
+      "brief": ".claude/materiais-das-empresas/cliente-exemplo/produtos/curso-exemplo.json"
+    },
+    {
+      "client_slug": "cliente-exemplo",
+      "product_slug": "workshop-exemplo",
+      "name": "Workshop Exemplo",
+      "brief": ".claude/materiais-das-empresas/cliente-exemplo/produtos/workshop-exemplo.json"
+    }
+  ]
+}

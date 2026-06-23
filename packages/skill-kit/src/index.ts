@@ -19,6 +19,8 @@ export * from './domain/operation-log.js';
 export * from './application/resolve-budget.js';
 export * from './application/build-rows.js';
 export * from './application/check-idempotency.js';
+export * from './application/ports.js';
+export * from './application/orchestrate-traffic.js';
 
 // infrastructure
 export * from './infrastructure/supabase-rest.js';

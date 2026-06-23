@@ -6,10 +6,14 @@ allowed-tools: Read, Bash, Glob, mcp__mcp-meta-ads__create_campaign, mcp__mcp-me
 
 # Skill — create-traffic-cliente-exemplo-campaign (Onda 2)
 
-> **Esqueleto (Onda 2).** Implementa o contrato de
+> Implementa o contrato de
 > [`docs/specs/create-traffic-campaign.md`](../../../docs/specs/create-traffic-campaign.md). A
-> orquestração real depende do MCP `mcp-meta-ads` e dos materiais do `cliente-exemplo` (pendente).
-> A lógica pura e testável vive em `@template/skill-kit` (`packages/skill-kit`).
+> **orquestração** (validação → idempotência → catálogo → clamp → subagents → imagens → hierarquia
+> Meta PAUSED → persistência → operation_logs → manifest) vive em `@template/skill-kit`:
+> `orchestrateTraffic(args, deps)` (`packages/skill-kit/src/application/orchestrate-traffic.ts`),
+> testada offline com fakes. Esta SKILL.md liga as **portas** (`ports.ts`) aos adapters reais:
+> Meta via MCP `mcp-meta-ads`, catálogo via arquivos + REST, imagens via skill `image-generate`.
+> O e2e real depende do MCP `mcp-meta-ads` e dos materiais do `cliente-exemplo` (pendente).
 
 ## Garantias inegociáveis
 

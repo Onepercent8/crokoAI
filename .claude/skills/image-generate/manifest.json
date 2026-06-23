@@ -1,0 +1,32 @@
+{
+  "slug": "image-generate",
+  "kind": "image",
+  "wave": 2,
+  "spec": "docs/specs/create-traffic-campaign.md",
+  "headless_safe": true,
+  "uses_ask_user_question": false,
+  "provider": "openai-gpt-image-2",
+  "auth_env": ["OPENAI_API_KEY", "SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+  "bucket": "ad-ingest",
+  "bucket_visibility": "public",
+  "object_name_strategy": "random-suffix",
+  "persistence": {
+    "mode": "supabase-rest",
+    "uses_supabase_mcp": false,
+    "writes_tables": ["generated_images"]
+  },
+  "library": "@template/skill-kit",
+  "input_schema": {
+    "client_slug": "slug ^[a-z0-9-]+$ (required)",
+    "product_slug": "slug ^[a-z0-9-]+$ (required)",
+    "angle": "autoridade | dor | oferta (required)",
+    "prompt": "string (required)",
+    "aspect": "1:1 | 4:5 | 1.91:1 (default 1:1)"
+  },
+  "output_schema": {
+    "generated_image_id": "uuid",
+    "public_url": "https url in ad-ingest",
+    "storage_path": "string"
+  },
+  "status": "scaffold"
+}

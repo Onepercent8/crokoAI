@@ -1,0 +1,11 @@
+{
+  "$comment": "Catálogo de clientes como arquivos (ADR 0014). Índice legível pela skill para resolver <cliente> antes de tocar a Meta ou o banco. Placeholders do template — cliente-exemplo / example.com. A fonte de verdade do ad_account_id/cap/page é a linha `clients` (seed da Onda 1); este índice só lista os slugs disponíveis.",
+  "clients": [
+    {
+      "slug": "cliente-exemplo",
+      "name": "Cliente Exemplo",
+      "materials_path": ".claude/materiais-das-empresas/cliente-exemplo",
+      "products": ["curso-exemplo", "workshop-exemplo"]
+    }
+  ]
+}

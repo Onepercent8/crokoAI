@@ -1,0 +1,17 @@
+{
+  "client_slug": "cliente-exemplo",
+  "product_slug": "curso-exemplo",
+  "name": "Curso Exemplo",
+  "landing_url": "https://example.com/curso-exemplo",
+  "price_cents": 19900,
+  "currency": "BRL",
+  "objective": "OUTCOME_TRAFFIC",
+  "call_to_action_type": "LEARN_MORE",
+  "positioning": "Curso introdutório para quem quer começar do zero com método guiado.",
+  "pains": [
+    "Não sabe por onde começar",
+    "Falta de tempo para estudar",
+    "Medo de investir e não ter retorno"
+  ],
+  "proof": ["Mais de 40 turmas concluídas", "Suporte direto com instrutores", "Garantia de 7 dias"]
+}
