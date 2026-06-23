@@ -1,0 +1,16 @@
+# crontab do runner — lido por supercronic (SPEC-000 §8 Onda 3 · ADR 0001).
+# Formato: min hora dia mês dow  comando. Horários em UTC. Sem MTA; logs vão
+# para stdout (observável via `fly logs`). Skills resolvidas por allowlist em
+# run-skill.sh; o poller serializa a fila com lock por mkdir.
+
+# --- fila por demanda: poller de agent_jobs, 1x/min -------------------------
+* * * * * /app/scripts/poll-agent-jobs.sh
+
+# --- skills agendadas (placeholders cliente-exemplo) ------------------------
+# Análise diária de funil às 06:00 UTC.
+0 6 * * * /app/scripts/run-skill.sh funnel-analytics-cliente-exemplo-campaign --client_slug cliente-exemplo
+# Resumo diário às 06:30 UTC (após a análise).
+30 6 * * * /app/scripts/run-skill.sh daily-summary-cliente-exemplo --client_slug cliente-exemplo
+
+# --- slot reservado (Onda 9): poller de autonomous_watches ------------------
+# */2 * * * * /app/scripts/poll-autonomous-watches.sh

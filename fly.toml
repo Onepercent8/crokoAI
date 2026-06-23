@@ -1,0 +1,27 @@
+# Runner Fly.io (SPEC-000 §8 Onda 3 · ADR 0001). App placeholder do template.
+# SEM [http_service]: o runner NÃO expõe porta pública — a única entrada são
+# linhas em `agent_jobs` (polling) e o crontab. Segredos via `fly secrets`
+# (NUNCA aqui): SUPABASE_URL, SUPABASE_SECRET_KEY, CLAUDE_API_KEY, OPENAI_API_KEY.
+app = "meta-ads-agents"
+primary_region = "gru"            # próximo do banco (sa-east-1) e da Meta
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # Não-segredos apenas. Segredos entram via `fly secrets set ...`.
+  RUNNER_LOCK_DIR = "/tmp/runner.lock"
+  CLAUDE_CONFIG_DIR = "/data/.claude"
+
+# Volume persistente: guarda o OAuth do Claude Code + config MCP (sobrevive a
+# deploys/restarts). Sem ele, o login se perde a cada deploy.
+[mounts]
+  source = "runner_data"
+  destination = "/data"
+
+# Máquina sempre ligada (cron + poller 24/7); baixo volume (~1 job/min).
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"
+
+# NOTE: nenhuma seção [http_service]/[[services]] por design (sem borda HTTP).

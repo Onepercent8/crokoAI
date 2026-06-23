@@ -26,6 +26,10 @@ export * from './domain/funnel.js';
 export * from './domain/verdict.js';
 export * from './application/analytics-args.js';
 export * from './application/orchestrate-analytics.js';
+// runner (wave 3)
+export * from './runner/allowlist.js';
+export * from './runner/args.js';
+export * from './runner/stream-events.js';
 
 // infrastructure
 export * from './infrastructure/supabase-rest.js';
