@@ -27,21 +27,29 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 | 0 | Fundações do repositório | ✅ | `docs/specs/` index, `.env.example` |
 | 1 | Camada de dados (Supabase) | ✅ | ADR 0002/0003/0004/0009 · spec meta-ads-persistence-schema |
 | 2 | Runtime de skills + 1ª skill (tráfego) | 🟡 | spec create-traffic-campaign |
-| 3 | Runner Fly.io (cron + fila) | ⬜ | ADR 0001/0009 · spec flyio-cron-campaign-runner |
-| 4 | Analytics (funil + resumo diário) | ⬜ | ADR 0024/0025 · spec meta-ads-funnel-analytics |
+| 3 | Runner Fly.io (cron + fila) | 🟡 | ADR 0001/0009 · spec flyio-cron-campaign-runner |
+| 4 | Analytics (funil + resumo diário) | 🟡 | ADR 0024/0025 · spec meta-ads-funnel-analytics |
 | 5 | Ativação + campanha de vendas | ⬜ | — |
 | 6 | Dashboard (Vercel) + auth | 🟡 | ADR 0005/0006 · spec web-dashboard-nexus |
-| 7 | Assistente de voz Nexus | ⬜ | SPEC-016 voice chat |
+| 7 | Assistente de voz Nexus | 🟡 | SPEC-016 voice chat |
 | 8 | Sistema de landing pages | 🟡 | ADR 0012/0013/0015/0017 · SPEC-011 |
 | 9 | Editor de LP + modo autônomo | ⬜ | ADR 0019/0020 · SPEC-012/013/014 |
-| 10 | Tracking server-side (Cloudflare Worker) | ⬜ | ADR 0021 · SPEC-015 |
+| 10 | Tracking server-side (Cloudflare Worker) | 🟡 | ADR 0021 · SPEC-015 |
 | 11 | Hardening, observabilidade & CI/CD | ⬜ | docs/security/threats/* |
 
-> **Build paralelo (2026-06-23, via workflow de agentes).** Specs + ADRs **redigidos** para as ondas
+> **Build paralelo — 1ª leva (2026-06-23).** Specs + ADRs **redigidos** para as ondas
 > 2, 3, 4, 6, 7, 8, 9, 10 (status `draft`/`proposed`). **Scaffolds offline** entregues e com gate
-> local verde para 2 (`packages/skill-kit` + skill/subagents), 6 (`web/`) e 8 (`packages/lp-render`)
-> — por isso estão 🟡 **em progresso**, não ✅: o gate completo depende de credenciais externas
-> (Meta MCP + materiais, env CrokoAI, Fly, Cloudflare — ver `NOTES.md` §7). Identidade visual Croko
+> local verde para 2 (`packages/skill-kit` + skill/subagents), 6 (`web/`) e 8 (`packages/lp-render`).
+>
+> **Build paralelo — 2ª leva (2026-06-23, 3 worktrees + agents).** Implementação **offline** das ondas
+> em 3 frentes disjuntas, integradas na `main` com gate global verde (lint ✓ · typecheck ✓ · test ✓):
+> **A** 2/3/4 (orquestrador de tráfego + portas injetáveis; infra runner Fly + helpers Python testados;
+> analytics funil read-only) · **B** 7 (Nexus: chat-loop/tools/allowlist/confirmação-2-turnos atrás de
+> interfaces, tools de escrita só enfileiram) + **fix de segurança do login W6** (degrada para POST,
+> senha não vaza na URL) · **C** 8 (template React static-export das 17 seções + skills create/publish)
+> e 10 (worker de tracking Cloudflare NO-PII). Testes: web 57 · lp-render 70 · skill-kit 136 · worker 45.
+> Todas seguem 🟡 **em progresso**, não ✅: o **e2e** depende de credenciais externas (Meta MCP headless +
+> materiais, env CrokoAI, Fly, Cloudflare, OpenAI/ElevenLabs — ver `NOTES.md` §7). Identidade visual Croko
 > aplicada como tema default em `web/` e `lp-render` (camada visual; placeholders textuais mantidos).
 
 ---

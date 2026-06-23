@@ -5,9 +5,12 @@
 > Fontes irmãs: [`SPEC-000-build-from-scratch.md`](./SPEC-000-build-from-scratch.md) (a planta),
 > [`WAVES.md`](./WAVES.md) (roadmap + status), [`CLAUDE.md`](./CLAUDE.md) (convenções).
 >
-> **Última atualização:** 2026-06-23 · **Wave atual:** 1 ✅ + **build paralelo** das ondas 2–10
-> (specs/ADRs + scaffolds offline de 2/6/8, status 🟡). Próximo: destravar gates com credenciais.
-> **Commits:** 5 + os desta rodada (docs specs/ADRs · workspaces · scaffolds W8/W6/W2 · tema Croko).
+> **Última atualização:** 2026-06-23 · **Wave atual:** 1 ✅ + **build paralelo (2 levas)** das ondas
+> 2/3/4/6/7/8/10 — implementação **offline** integrada na `main`, gate global verde, status 🟡
+> (e2e pendente de credenciais). Restam ⬜: 5 (sem spec), 9 (integração web+skill+landing), 11 (CI/hardening).
+> Próximo: destravar gates com credenciais **ou** fase 2 (specar W5, implementar W9, hardening W11).
+> **Commits:** 5 + 1ª leva (specs/ADRs · workspaces · scaffolds · tema Croko) + 2ª leva (9 commits de
+> ondas via 3 worktrees/agents + 2 de integração: limpeza de import + ordenação de build:libs).
 
 ---
 
@@ -309,3 +312,23 @@ Git: commits sem config global → usar
   zinc p/ ink/paper + Fontshare Clash Display/Satoshi + `.dark` por classe) e em `lp-render`
   (`DEFAULT_THEME`); só camada visual — placeholders textuais mantidos (ver §2.1 exceção).
   **Não marcado ✅:** gates de operação real dependem de credenciais (§7). W2/W6/W8 = 🟡.
+- **Build paralelo — 2ª leva (2026-06-23, 3 worktrees + agents em background):** decisão da usuária —
+  paralelizar a **implementação offline** em 3 frentes disjuntas em filesystem (sem conflito de
+  worktree), gate = lint/typecheck/test com mocks (e2e adiado p/ credenciais). **Frente A** (W2/3/4):
+  `orchestrate-traffic.ts` + `ports.ts` (Meta/scrape/copy/image/persistência atrás de portas
+  injetáveis; PAUSED/clamp/destination_type/advantage+/imagem-inline/8 operation_logs enforçados),
+  infra runner (`Dockerfile`/`fly.toml`/`crontab`/`scripts/*` com lógica duplicada TS+Python — 16
+  testes `unittest`), analytics funil read-only (`MetaReadPort` só expõe `listEntities` → mutação não
+  compila). **Frente B** (W7 + fix W6): `web/lib/nexus/*` (chat-loop/tools/allowlist `SKILL_BY_SLUG`/
+  confirmação 2-turnos via `action_id` single-use TTL/`JobInserter` por REST; injeção = dado), e
+  **fix de segurança do login**: form degrada para `method=POST` (senha não vaza na URL) + endpoint
+  aceita form-encoded. **Frente C** (W8/10): componentes React das 17 seções em
+  `packages/lp-render/src/react` (fonte única reusável pelo editor da W9), `landing-pages/_template`
+  (Next static export), skills create/publish atrás de ports; worker `worker/track` NO-PII
+  (hash em memória, IP nunca persistido, idempotência D1 + `event_id` único). **Integração:** A por
+  `ff-merge`, B e C por `cherry-pick` (worktrees nasceram de base antiga `390d4ae`, anterior aos
+  scaffolds W6/W8 — A/C fizeram `ff` p/ `main` e B re-importou `web/`; cherry-pick descartou o
+  re-import redundante). **2 commits de integração:** remoção de import morto (`buildOperationLog`) e
+  `build:libs` (buildar `lp-render` antes de typecheck/test — `_template` consome subpaths `./react`/
+  `./skills` compilados e `dist/` é gitignored). Gate global verde: lint ✓ · typecheck ✓ · test ✓
+  (web 57 · lp-render 70 · skill-kit 136 · landing-template 2 · worker 45). **Não marcado ✅.**
