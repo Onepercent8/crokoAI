@@ -8,7 +8,9 @@ export default defineConfig({
     environment: 'node',
     passWithNoTests: true,
     include: ['**/*.{test,spec}.ts'],
-    exclude: ['node_modules', 'venv', 'dist', 'build', '.next', 'out'],
+    // web/ e packages/* têm vitest próprio (rodam via `npm run test --workspaces`).
+    // O vitest raiz cobre só o nível raiz para não herdar env/config dos workspaces.
+    exclude: ['node_modules', 'venv', 'dist', 'build', '.next', 'out', 'web/**', 'packages/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

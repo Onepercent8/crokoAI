@@ -14,6 +14,10 @@ export default tseslint.config(
       'out/**',
       '.next/**',
       'coverage/**',
+      // Workspaces têm gate próprio (npm run lint --workspaces): web usa `next lint`,
+      // os packages rodam typecheck + vitest. O eslint raiz cobre só o nível raiz.
+      'web/**',
+      'packages/**',
     ],
   },
   js.configs.recommended,
