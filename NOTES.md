@@ -5,10 +5,9 @@
 > Fontes irmãs: [`SPEC-000-build-from-scratch.md`](./SPEC-000-build-from-scratch.md) (a planta),
 > [`WAVES.md`](./WAVES.md) (roadmap + status), [`CLAUDE.md`](./CLAUDE.md) (convenções).
 >
-> **Última atualização:** 2026-06-23 · **Wave atual:** 1 concluída ✅ (+ aplicada ao **remoto**) →
-> próxima é a **Wave 2**.
-> **Commits:** 5 (`wave 0` → `mark wave 0` → `NOTES` → `wave 1 supabase data layer` →
-> `wave 1 remote apply + harden search_path`).
+> **Última atualização:** 2026-06-23 · **Wave atual:** 1 ✅ + **build paralelo** das ondas 2–10
+> (specs/ADRs + scaffolds offline de 2/6/8, status 🟡). Próximo: destravar gates com credenciais.
+> **Commits:** 5 + os desta rodada (docs specs/ADRs · workspaces · scaffolds W8/W6/W2 · tema Croko).
 
 ---
 
@@ -38,6 +37,10 @@
    `cliente-exemplo`, produtos `curso-exemplo`/`workshop-exemplo`, assistente **Nexus**, agência
    **Acme**, domínio **example.com**, npm scope **@template**, app Fly **meta-ads-agents**.
    → A troca pela identidade real (Croko Media) é uma tarefa futura, pós-build.
+   **EXCEÇÃO (2026-06-23, decisão da usuária):** a camada **VISUAL** (tokens/paleta/fontes do
+   `design-system/croko/tokens.css` + MASTER.md) será plugada como **tema default** do dashboard
+   (W6) e dos `Theme` defaults do `lp-render` (W8). Os placeholders **TEXTUAIS** (nomes, domínio,
+   npm scope, app Fly) **permanecem** — só o visual (cores/fontes/raios/espaçamento) vira Croko.
 2. **`.env.local` = template com placeholders + comentários.** Nenhum segredo real escrito por mim;
    preenchimento é manual da usuária. `.env.example` é a fonte canônica versionada.
 3. **Escopo = roadmap completo das 12 waves, executando UMA wave por vez** com gate de aceite verde
@@ -225,7 +228,19 @@ agent_jobs/autonomous_watches/nexus_narrations · operation_logs/agent_events/da
       Supabase (não escritas por mim; segredos fora do git). Para dev local, as chaves **locais** do
       `supabase start` continuam válidas (locais-only).
 - [ ] **Wave 2 precisa:** MCP da Meta (`CrokoMediaAdsMCP`/`mcp-meta-ads`) autenticado +
-      `materiais-das-empresas/cliente-exemplo/` (logo, fotos, brief de produto) para a 1ª skill.
+      `materiais-das-empresas/cliente-exemplo/` (logo, fotos, brief `produtos/<slug>.json`) +
+      catálogo `lista-de-clientes`/`lista-de-produtos` para destravar o e2e da 1ª skill.
+- [ ] **Gates bloqueados por credencial (do build paralelo 2026-06-23):**
+      - **W6 dashboard:** chaves do projeto **CrokoAI** no env (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+        `NEXT_PUBLIC_SUPABASE_URL`, publishable key) + `AUTH_SECRET` (≥32B) + `DASHBOARD_PASSWORD`
+        (hash SHA-256) + Upstash (`UPSTASH_REDIS_REST_URL/TOKEN`) p/ render real e login ponta-a-ponta.
+      - **W2/4/5:** Meta MCP + materiais (acima); `OPENAI_API_KEY` p/ a skill `image-generate`.
+      - **W3/5:** conta **Fly.io** (deploy do runner) — e validar se o MCP Meta funciona em `claude -p`
+        headless no cron (risco aberto do ADR 0001).
+      - **W10:** conta **Cloudflare** (Worker + D1).
+- [ ] **Hardening (W11):** threat models STRIDE referenciados mas ainda não criados
+      (`web-dashboard`, `nexus-screen-vision`, `landing-page-tracking`); revisar `npm audit`
+      (8 vulns dev); adicionar `lint` aos packages; consolidar ADRs duplicados `0003`/`0009`.
 - [ ] (Opcional) Padronizar Node 22 via `.nvmrc`.
 
 ---
@@ -277,4 +292,16 @@ Git: commits sem config global → usar
   `harden_function_search_path`** fixando `search_path=''` nas 2 funções de trigger (fecha o advisor
   0011). Achado: event trigger `ensure_rls`/`rls_auto_enable()` pré-existente (ver §4, decisão
   pendente). Gate remoto verde.
-- _(próximas waves: adicionar uma entrada aqui ao concluir cada uma)_
+- **Build paralelo (2026-06-23, via workflow de 11 agentes):** análise de dependências (SPEC §9)
+  → 3 frentes independentes da W1 (A: 2→3→4→5 · B: 6→7 · C: 8→{9,10}); raízes paralelizáveis
+  W2/W6/W8. Decisão da usuária (Opção A): paralelizar o que fecha **offline** — specs+ADRs de todas
+  as ondas + scaffolds sem credencial. **Entregue:** specs `draft` + ADRs `proposed` das ondas
+  2/3/4/6/7/8/9/10; pacote `@template/lp-render` (W8, 45 testes), scaffold `web/` (W6, Next 15 +
+  Hono + auth + CSP, 16 testes), `@template/skill-kit` + skill/subagents (W2, 75 testes) — todos
+  com build/test verdes offline. **Monorepo:** habilitados `workspaces` (`web`, `packages/*`); gate
+  raiz faz fan-out (`--workspaces --if-present`); `eslint`/`vitest` raiz ignoram os workspaces (cada
+  um tem gate próprio). Gate global verde: typecheck ✓ · lint ✓ · test ✓ (136 testes). **Visual:**
+  identidade Croko plugada como tema default em `web/` (Tailwind 4 `@theme` re-tingindo a escala
+  zinc p/ ink/paper + Fontshare Clash Display/Satoshi + `.dark` por classe) e em `lp-render`
+  (`DEFAULT_THEME`); só camada visual — placeholders textuais mantidos (ver §2.1 exceção).
+  **Não marcado ✅:** gates de operação real dependem de credenciais (§7). W2/W6/W8 = 🟡.
