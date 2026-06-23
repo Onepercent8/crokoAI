@@ -241,6 +241,10 @@ agent_jobs/autonomous_watches/nexus_narrations · operation_logs/agent_events/da
 - [ ] **Hardening (W11):** threat models STRIDE referenciados mas ainda não criados
       (`web-dashboard`, `nexus-screen-vision`, `landing-page-tracking`); revisar `npm audit`
       (8 vulns dev); adicionar `lint` aos packages; consolidar ADRs duplicados `0003`/`0009`.
+- [ ] **W6 login — achado de segurança (2026-06-23):** o `login-form` faz **fallback GET nativo**
+      se o JS não hidratar → a senha vaza na **URL** (log do servidor, histórico, referrer). Visto no
+      dev log como `GET /login?password=...`. Fix: form degradar para `method=POST` (e o endpoint
+      aceitar form-encoded além de JSON) + **rotacionar** a senha de teste já usada.
 - [ ] (Opcional) Padronizar Node 22 via `.nvmrc`.
 
 ---

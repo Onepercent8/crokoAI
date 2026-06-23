@@ -26,6 +26,14 @@ describe('env', () => {
     );
   });
 
+  it('treats a present-but-empty optional secret as absent (Turnstile off)', () => {
+    // Regression: .env templates ship the key empty (`KEY=`), which arrives as ''.
+    // `.optional()` only allows undefined, so '' must be coerced to absent.
+    expect(() =>
+      parseServerEnv({ ...validServer, CLOUDFLARE_TURNSTILE_SECRET_KEY: '' }),
+    ).not.toThrow();
+  });
+
   it('accepts a valid public env', () => {
     expect(() =>
       parsePublicEnv({

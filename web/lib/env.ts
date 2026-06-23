@@ -11,6 +11,16 @@
  */
 import { z } from 'zod';
 
+/**
+ * Optional env var that is treated as ABSENT when present-but-empty.
+ * `.env` templates ship optional keys as `KEY=` (empty string), which `.optional()`
+ * alone would reject (it only allows `undefined`). We coerce blank → undefined.
+ */
+const optionalNonEmpty = z.preprocess(
+  (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+  z.string().min(1).optional(),
+);
+
 const serverEnvSchema = z.object({
   // Supabase (server-side, service_role — never exposed to the browser).
   SUPABASE_URL: z.string().url(),
@@ -25,13 +35,13 @@ const serverEnvSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().url(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
   // Cloudflare Turnstile — optional anti-bot on login.
-  CLOUDFLARE_TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+  CLOUDFLARE_TURNSTILE_SECRET_KEY: optionalNonEmpty,
 });
 
 const publicEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
-  NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY: z.string().optional(),
+  NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY: optionalNonEmpty,
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
