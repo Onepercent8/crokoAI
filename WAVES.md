@@ -25,7 +25,7 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 | # | Onda | Status | Spec / ADR |
 |---|------|--------|------------|
 | 0 | Fundações do repositório | ✅ | `docs/specs/` index, `.env.example` |
-| 1 | Camada de dados (Supabase) | ⬜ | ADR 0002/0004/0003 · spec meta-ads-persistence-schema |
+| 1 | Camada de dados (Supabase) | ✅ | ADR 0002/0003/0004/0009 · spec meta-ads-persistence-schema |
 | 2 | Runtime de skills + 1ª skill (tráfego) | ⬜ | spec create-traffic-campaign |
 | 3 | Runner Fly.io (cron + fila) | ⬜ | ADR 0001/0009 · spec flyio-cron-campaign-runner |
 | 4 | Analytics (funil + resumo diário) | ⬜ | ADR 0024/0025 · spec meta-ads-funnel-analytics |
@@ -49,12 +49,15 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 - **Gate:** `lint`, `typecheck` e `test` verdes (sem testes ainda); `.env.example` lista todas as
   chaves da §2.
 
-### Onda 1 — Camada de dados (Supabase)  ⬜
+### Onda 1 — Camada de dados (Supabase)  ✅
 - **Objetivo:** schema inteiro da §6 como migrations versionadas + seed do cliente exemplo.
 - **Entregáveis:** `supabase/migrations/*.sql`, RLS deny-by-default, trigger `set_updated_at`,
   RPCs `claim_agent_job`/`claim_autonomous_watch`, buckets, seed `cliente-exemplo`, ADRs.
 - **Gate:** `supabase db reset` aplica limpo; `select` como `service_role` ok e como anon falha;
   `claim_agent_job` atômico; seed presente.
+- **Aceita em 2026-06-22.** 10 migrations + 20 tabelas; gate verde via `scripts/verify-wave1.sql`
+  (RLS 20/20, service_role lê / anon `permission denied`, claim atômico, índice único parcial,
+  append-only, buckets). Validado contra Supabase **local** (Docker + CLI 2.72.7).
 
 ### Onda 2 — Runtime de skills + 1ª skill (tráfego)  ⬜
 - **Objetivo:** skill headless cria campanha de tráfego **PAUSED** via MCP Meta e persiste.

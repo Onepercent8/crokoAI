@@ -5,7 +5,7 @@
 > Fontes irmãs: [`SPEC-000-build-from-scratch.md`](./SPEC-000-build-from-scratch.md) (a planta),
 > [`WAVES.md`](./WAVES.md) (roadmap + status), [`CLAUDE.md`](./CLAUDE.md) (convenções).
 >
-> **Última atualização:** 2026-06-22 · **Wave atual:** 0 concluída ✅ → próxima é a **Wave 1**.
+> **Última atualização:** 2026-06-22 · **Wave atual:** 1 concluída ✅ → próxima é a **Wave 2**.
 
 ---
 
@@ -13,9 +13,12 @@
 
 - **Wave 0 (Fundações) — ✅ aceita e commitada.** Monorepo, contrato de env, tooling e scaffold de
   docs prontos. Gate verde: `typecheck ✓ · lint ✓ · test ✓`.
-- **Git:** inicializado nesta sessão. 3 commits (foundations → mark wave 0 → este NOTES).
-- **Próximo passo:** Wave 1 — Camada de dados (Supabase). **Bloqueador prático:** preencher
-  credenciais Supabase + `DATABASE_URL` no `.env.local` para validar o gate real (`supabase db reset`).
+- **Wave 1 (Camada de dados) — ✅ aceita.** 10 migrations (`supabase/migrations/2026...`), 20 tabelas
+  da §6, RLS deny-by-default, triggers `set_updated_at`/`prevent_mutation`, RPCs `claim_agent_job`/
+  `claim_autonomous_watch`, 4 buckets, lockdown de grants e seed `cliente-exemplo`. Gate verde via
+  `scripts/verify-wave1.sql` contra **Supabase local** (Docker + CLI 2.72.7).
+- **Próximo passo:** Wave 2 — Runtime de skills + 1ª skill (tráfego). Depende do banco (✅) e exige
+  **MCP da Meta** (`mcp-meta-ads` / `CrokoMediaAdsMCP`) + materiais do `cliente-exemplo`.
 
 ---
 
@@ -125,11 +128,14 @@ web/ packages/lp-render/ landing-pages/_template/ worker/track/ scripts/ supabas
 
 ## 7. Pendências / inputs necessários antes da próxima wave
 
-- [ ] **Wave 1 precisa:** projeto Supabase criado + `SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
-      `NEXT_PUBLIC_SUPABASE_*`, `DATABASE_URL` no `.env.local`. Decidir se usa Supabase local
-      (CLI `supabase start`) ou projeto remoto (há MCP Supabase conectado nesta sessão).
-- [ ] Confirmar instalação do **Supabase CLI** (`supabase --version`) — necessário para
-      `supabase db reset` (gate da Wave 1).
+- [x] ~~Wave 1: Supabase + CLI~~ — **resolvido via Supabase local** (Docker + CLI 2.72.7).
+      Stack local no ar: Studio `http://127.0.0.1:54323`, DB `:54322`. Para subir de novo:
+      `supabase start`; reset limpo: `supabase db reset` (com stack no ar).
+- [ ] **`.env.local`:** colar as credenciais **locais** do bloco Supabase (impressas pelo
+      `supabase start`; também na §1 da minha resposta da Wave 1). São locais-only, não-produção.
+      Para **produção**, criar projeto Supabase remoto e preencher com os valores reais.
+- [ ] **Wave 2 precisa:** MCP da Meta (`CrokoMediaAdsMCP`/`mcp-meta-ads`) autenticado +
+      `materiais-das-empresas/cliente-exemplo/` (logo, fotos, brief de produto) para a 1ª skill.
 - [ ] (Opcional) Padronizar Node 22 via `.nvmrc`.
 
 ---
@@ -151,4 +157,13 @@ web/ packages/lp-render/ landing-pages/_template/ worker/track/ scripts/ supabas
 - **Wave 0 (2026-06-22):** fundações criadas; placeholders mantidos; `.env.local` como template;
   workspaces adiados; gate verde; git inicializado. Achados: Node v23 (≠22), 6 vulns dev,
   `design-system/` com marca real Croko, `venv/` pré-existente.
+- **Wave 1 (2026-06-22):** schema §6 inteiro em 10 migrations + seed; gate verde no Supabase local.
+  Decisões: **enums via CHECK** (não tipos nativos) p/ evoluir por migration; **`prevent_mutation()`**
+  para append-only (RLS não basta pois `service_role` tem BYPASSRLS); **`revoke ... from anon/
+  authenticated` + alter default privileges** para o anon falhar com `permission denied` (não só RLS
+  vazia); colunas de scaffolding adicionadas além da §6 (`id/created_at/updated_at/client_id`,
+  `claimed_by/claimed_at` em jobs/watches) — a §6 lista colunas-chave, "o DDL exato é a migration".
+  `supabase init` rodado (config.toml, project_id=CroKoAI, `[db.seed]`→`./seed.sql`). Validação:
+  `supabase start` (não `db reset --local`, que exige stack já no ar) → `psql` **dentro do container**
+  `supabase_db_CroKoAI` (não há `psql` no PATH do host).
 - _(próximas waves: adicionar uma entrada aqui ao concluir cada uma)_
