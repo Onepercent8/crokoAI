@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+/*
+ * Dark é dirigido por classe (.dark no <html>), não por media query — o dashboard
+ * usa a identidade Croko (dark premium) como padrão. Ver design-system/croko/MASTER.md.
+ * Camada VISUAL apenas; placeholders textuais (Acme, cliente-exemplo) permanecem.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ── Tipografia Croko (Fontshare; <link> no layout) ── */
+  --font-display: 'Clash Display', 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Satoshi', 'Inter', system-ui, sans-serif;
+
+  /* ── Cores de marca ── */
+  --color-brand-teal: #0a6e75;
+  --color-brand-green: #57cc99;
+  --color-brand-green-soft: #c1e1c2;
+
+  /*
+   * Re-tinge a escala zinc (dark) para o sistema ink/paper da Croko, de modo que
+   * as utilidades `dark:bg-zinc-950`/`text-zinc-100`/`border-zinc-800` já escritas
+   * nos componentes rendam a marca sem precisar editar cada componente.
+   */
+  --color-zinc-950: #1c1c1c; /* ink — fundo base */
+  --color-zinc-900: #151515; /* ink-2 — faixas */
+  --color-zinc-800: #202020; /* ink-3 — cards/bordas */
+  --color-zinc-700: #2c2c2c; /* bordas com ênfase */
+  --color-zinc-500: #9a9c99; /* texto secundário (muted) */
+  --color-zinc-400: #9a9c99; /* texto secundário no dark */
+  --color-zinc-100: #e1e1e1; /* paper — texto principal */
+}
+
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Acento de ação Croko em links sem cor própria + seleção. */
+  a:hover {
+    color: var(--color-brand-green);
+  }
+
+  ::selection {
+    background: var(--color-brand-green);
+    color: #1c1c1c;
+  }
+}
