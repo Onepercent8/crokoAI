@@ -24,7 +24,7 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 
 | # | Onda | Status | Spec / ADR |
 |---|------|--------|------------|
-| 0 | Fundações do repositório | 🟡 | `docs/specs/` index, `.env.example` |
+| 0 | Fundações do repositório | ✅ | `docs/specs/` index, `.env.example` |
 | 1 | Camada de dados (Supabase) | ⬜ | ADR 0002/0004/0003 · spec meta-ads-persistence-schema |
 | 2 | Runtime de skills + 1ª skill (tráfego) | ⬜ | spec create-traffic-campaign |
 | 3 | Runner Fly.io (cron + fila) | ⬜ | ADR 0001/0009 · spec flyio-cron-campaign-runner |
@@ -41,7 +41,7 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 
 ## Detalhe por onda (objetivo · entregáveis · gate de aceite)
 
-### Onda 0 — Fundações do repositório  🟡
+### Onda 0 — Fundações do repositório  ✅
 - **Objetivo:** monorepo com tooling, contrato de env e documentação base.
 - **Entregáveis:** estrutura de pastas (§5); TS estrito (`strict`, `noUncheckedIndexedAccess`);
   ESLint+Prettier; Vitest; `.env.example`; `CLAUDE.md` + `.claude/rules/*`; esqueleto `docs/`
