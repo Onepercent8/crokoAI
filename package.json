@@ -18,8 +18,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "typecheck": "tsc --noEmit && npm run typecheck --workspaces --if-present",
-    "test": "vitest run && npm run test --workspaces --if-present",
+    "build:libs": "npm run build -w @template/lp-render",
+    "typecheck": "npm run build:libs && tsc --noEmit && npm run typecheck --workspaces --if-present",
+    "test": "npm run build:libs && vitest run && npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present"
   },
   "devDependencies": {
