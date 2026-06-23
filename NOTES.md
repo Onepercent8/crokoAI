@@ -5,8 +5,10 @@
 > Fontes irmãs: [`SPEC-000-build-from-scratch.md`](./SPEC-000-build-from-scratch.md) (a planta),
 > [`WAVES.md`](./WAVES.md) (roadmap + status), [`CLAUDE.md`](./CLAUDE.md) (convenções).
 >
-> **Última atualização:** 2026-06-23 · **Wave atual:** 1 concluída ✅ → próxima é a **Wave 2**.
-> **Commits:** 4 (`wave 0` → `mark wave 0` → `NOTES` → `wave 1 supabase data layer`).
+> **Última atualização:** 2026-06-23 · **Wave atual:** 1 concluída ✅ (+ aplicada ao **remoto**) →
+> próxima é a **Wave 2**.
+> **Commits:** 5 (`wave 0` → `mark wave 0` → `NOTES` → `wave 1 supabase data layer` →
+> `wave 1 remote apply + harden search_path`).
 
 ---
 
@@ -18,6 +20,13 @@
   da §6, RLS deny-by-default, triggers `set_updated_at`/`prevent_mutation`, RPCs `claim_agent_job`/
   `claim_autonomous_watch`, 4 buckets, lockdown de grants e seed `cliente-exemplo`. Gate verde via
   `scripts/verify-wave1.sql` contra **Supabase local** (Docker + CLI 2.72.7).
+- **Wave 1 aplicada ao REMOTO (2026-06-23) via MCP Supabase.** Projeto **CrokoAI**
+  (`smixacjjoaniaxrjcreq`, sa-east-1, Postgres 17). 10 migrations + 1 de hardening
+  (`harden_function_search_path`, fixa `search_path` em `set_updated_at`/`prevent_mutation`).
+  Versões do histórico remoto **re-stampadas** para baterem com os arquivos locais (o
+  `apply_migration` do MCP gera timestamp próprio → re-stamp evita drift no `db push` futuro).
+  Gate remoto verde + advisors limpos (só os 20 INFO esperados). **Há um projeto homônimo `CrokoAds`
+  e outros 2** na mesma org — confirmar sempre o ref antes de aplicar DDL.
 - **Próximo passo:** Wave 2 — Runtime de skills + 1ª skill (tráfego). Depende do banco (✅) e exige
   **MCP da Meta** (`mcp-meta-ads` / `CrokoMediaAdsMCP`) + materiais do `cliente-exemplo`.
 
@@ -101,6 +110,20 @@
 - **`config.toml`** gerado por `supabase init` tem `project_id = "CroKoAI"` e `[db.seed]` →
   `./seed.sql`. Versionado. `supabase/.gitignore` (gerado) ignora `.branches`/`.temp`/`.env*.local`.
 
+### Remoto Supabase — artefato pré-existente `rls_auto_enable()` (decisão pendente)
+
+- O projeto remoto **CrokoAI** já vinha com um **event trigger `ensure_rls`** (em `ddl_command_end`)
+  que chama a função **`public.rls_auto_enable()`** (`SECURITY DEFINER`). **NÃO** foi criada pelas
+  nossas migrations — provável template/tooling. Auto-habilita RLS em tabelas novas (redundante p/
+  nós, que já fazemos `enable row level security` por tabela). Os 6 event triggers padrão do
+  Supabase (`pgrst_*`, `issue_pg_*`, `issue_graphql_placeholder`) continuam intactos; o `ensure_rls`
+  é o **único extra**.
+- Advisor aponta 2 WARN: a função é executável por `anon`/`authenticated` via `/rest/v1/rpc/
+  rls_auto_enable`. **Risco prático ≈ nulo** (chamar função de event trigger fora de contexto de
+  trigger gera erro), mas viola least-privilege. **Não removi/alterei** (criada nos últimos 7 dias e
+  não por mim → exige aprovação). Opções p/ a usuária: (1) manter como está; (2) revogar EXECUTE de
+  anon/authenticated/public (silencia o WARN, mantém o helper); (3) remover trigger+função.
+
 ### MCP disponíveis nesta sessão (claude.ai) — crítico p/ Waves 2+
 
 - **Meta Ads = `mcp__claude_ai_CrokoMediaAdsMCP__*`** (NÃO um CLI `mcp-meta-ads`; a SPEC §10 chama
@@ -167,7 +190,7 @@ docs/README.md + docs/{adr,specs,how-to,reference,tutorials,explanation,security
 supabase/config.toml          # gerado por `supabase init` (project_id=CroKoAI, [db.seed]→seed.sql)
 supabase/.gitignore           # gerado (ignora .branches/.temp/.env*.local)
 supabase/seed.sql             # seed cliente-exemplo (idempotente)
-supabase/migrations/          # 10 arquivos 20260622120000..120900 (20 tabelas, RLS, RPCs, buckets, lockdown)
+supabase/migrations/          # 11 arquivos: 20260622120000..120900 (schema) + 20260623120000_harden_function_search_path
 docs/specs/meta-ads-persistence-schema.md   # accepted
 docs/adr/000{2,3,4,9}-*.md                   # accepted
 docs/security/threats/supabase-data-layer.md # STRIDE da camada de dados
@@ -192,9 +215,12 @@ agent_jobs/autonomous_watches/nexus_narrations · operation_logs/agent_events/da
 - [x] ~~Wave 1: Supabase + CLI~~ — **resolvido via Supabase local** (Docker + CLI 2.72.7).
       Stack local no ar: Studio `http://127.0.0.1:54323`, DB `:54322`. Para subir de novo:
       `supabase start`; reset limpo: `supabase db reset` (com stack no ar).
-- [ ] **`.env.local`:** colar as credenciais **locais** do bloco Supabase (impressas pelo
-      `supabase start`; também na §1 da minha resposta da Wave 1). São locais-only, não-produção.
-      Para **produção**, criar projeto Supabase remoto e preencher com os valores reais.
+- [x] ~~**Projeto Supabase remoto** para produção~~ — **criado e migrado**: **CrokoAI**
+      (`smixacjjoaniaxrjcreq`, sa-east-1). URL `https://smixacjjoaniaxrjcreq.supabase.co`.
+- [ ] **`.env.local` / env de produção:** colar as chaves do projeto remoto **CrokoAI**
+      (`SUPABASE_URL`, `SUPABASE_SECRET_KEY` / service_role, publishable key) — pegar no painel
+      Supabase (não escritas por mim; segredos fora do git). Para dev local, as chaves **locais** do
+      `supabase start` continuam válidas (locais-only).
 - [ ] **Wave 2 precisa:** MCP da Meta (`CrokoMediaAdsMCP`/`mcp-meta-ads`) autenticado +
       `materiais-das-empresas/cliente-exemplo/` (logo, fotos, brief de produto) para a 1ª skill.
 - [ ] (Opcional) Padronizar Node 22 via `.nvmrc`.
@@ -240,4 +266,12 @@ Git: commits sem config global → usar
   `supabase init` rodado (config.toml, project_id=CroKoAI, `[db.seed]`→`./seed.sql`). Validação:
   `supabase start` (não `db reset --local`, que exige stack já no ar) → `psql` **dentro do container**
   `supabase_db_CroKoAI` (não há `psql` no PATH do host).
+- **Wave 1 remote (2026-06-23):** schema aplicado ao projeto remoto **CrokoAI**
+  (`smixacjjoaniaxrjcreq`) via **MCP Supabase** (`apply_migration` × 10 + seed via `execute_sql`).
+  Decisões: **re-stampar `supabase_migrations.schema_migrations`** para as versões dos arquivos
+  locais (o MCP gera timestamp próprio → re-stamp evita drift no `supabase db push`); **seed via
+  `execute_sql`** (dado, não migration — espelha o `[db.seed]` local); **nova migration
+  `harden_function_search_path`** fixando `search_path=''` nas 2 funções de trigger (fecha o advisor
+  0011). Achado: event trigger `ensure_rls`/`rls_auto_enable()` pré-existente (ver §4, decisão
+  pendente). Gate remoto verde.
 - _(próximas waves: adicionar uma entrada aqui ao concluir cada uma)_

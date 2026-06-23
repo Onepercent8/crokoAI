@@ -58,6 +58,13 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 - **Aceita em 2026-06-22.** 10 migrations + 20 tabelas; gate verde via `scripts/verify-wave1.sql`
   (RLS 20/20, service_role lê / anon `permission denied`, claim atômico, índice único parcial,
   append-only, buckets). Validado contra Supabase **local** (Docker + CLI 2.72.7).
+- **Aplicada ao projeto remoto em 2026-06-23** via MCP Supabase (projeto **CrokoAI**,
+  ref `smixacjjoaniaxrjcreq`, sa-east-1). 11 migrations no histórico remoto (10 originais +
+  `harden_function_search_path`), versões re-stampadas para baterem com os arquivos locais. Gate
+  remoto verde (20/20 RLS, buckets, seed, claim, índice parcial, append-only). Advisors de
+  segurança: só os 20 `rls_enabled_no_policy` (INFO, esperado pelo deny-by-default); WARN de
+  `function_search_path_mutable` corrigido. **Pendência:** artefato pré-existente `rls_auto_enable()`
+  (event trigger `ensure_rls`, não nosso) — ver NOTES §4.
 
 ### Onda 2 — Runtime de skills + 1ª skill (tráfego)  ⬜
 - **Objetivo:** skill headless cria campanha de tráfego **PAUSED** via MCP Meta e persiste.
