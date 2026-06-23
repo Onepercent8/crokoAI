@@ -20,7 +20,6 @@
 import { CAMPAIGN_STATUS_PAUSED, assertCampaignSpecSafe } from '../domain/meta-guards.js';
 import { asCents, type Cents } from '../domain/money.js';
 import { resolveIdempotencyKey } from '../domain/idempotency.js';
-import { buildOperationLog } from '../domain/operation-log.js';
 import {
   CREATIVE_ANGLES,
   CreateTrafficArgsSchema,
