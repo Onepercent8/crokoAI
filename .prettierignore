@@ -8,3 +8,7 @@ coverage
 pnpm-lock.yaml
 package-lock.json
 *.md
+*.toml
+
+# Serializer output (deterministic build artifacts, not hand-edited).
+landing-pages/_template/content/

@@ -1,0 +1,29 @@
+# Cloudflare Worker — tracking server-side (SPEC-015, Onda 10).
+# Deploy is gated on Cloudflare credentials (see README). Secrets are set with
+# `wrangler secret put <NAME>` — NEVER committed here.
+
+name = "template-track"
+main = "src/index.ts"
+compatibility_date = "2024-11-27"
+compatibility_flags = ["nodejs_compat"]
+
+# Public route for the tracking endpoint. Placeholder domain (example.com).
+routes = [{ pattern = "track.example.com/*", zone_name = "example.com" }]
+
+# Non-secret config. Secrets (SUPABASE_SECRET_KEY, META_CAPI_TOKEN,
+# GA4_API_SECRET, GADS_DEVELOPER_TOKEN) are set via `wrangler secret put`.
+[vars]
+ALLOWED_ORIGIN_SUFFIX = ".example.com"
+RATE_LIMIT_PER_MINUTE = "60"
+SUPABASE_URL = "https://PROJECT.supabase.co"
+META_PIXEL_ID = ""
+GA4_MEASUREMENT_ID = ""
+GADS_CONVERSION_ID = ""
+GADS_CONVERSION_LABEL = ""
+
+# Edge state: event_id dedup + per-IP rate counters.
+[[d1_databases]]
+binding = "TRACK_DB"
+database_name = "template-track"
+database_id = "PLACEHOLDER_D1_DATABASE_ID"
+migrations_dir = "migrations"
