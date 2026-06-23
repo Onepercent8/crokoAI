@@ -1,0 +1,36 @@
+# === Segredos / ambiente ======================================================
+# Versiona apenas o .env.example; tudo mais que for .env* fica de fora.
+.env
+.env.*
+!.env.example
+
+# === Node / build =============================================================
+node_modules/
+dist/
+build/
+out/
+.next/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# === Python venv ==============================================================
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# === Supabase (local) =========================================================
+supabase/.branches/
+supabase/.temp/
+
+# === Ferramentas / SO =========================================================
+.DS_Store
+*.log
+.vercel/
+.wrangler/
+.fly/
+
+# === Artefatos de runtime das skills ==========================================
+tentativas-geracao-de-campanhas/
+.claude/logs/

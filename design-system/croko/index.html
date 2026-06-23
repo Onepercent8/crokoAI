@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Croko — Design System</title>
+<meta name="description" content="Painel visual do design system da Croko: cores, tipografia, espaçamento, componentes, movimento e regras de cópia." />
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+<style>
+/* Tokens (espelham tokens.css — embutidos para robustez) */
+:root {
+  --teal:#0a6e75; --green:#57cc99; --green-soft:#c1e1c2;
+  --paper:#e1e1e1; --ink:#1c1c1c; --ink-2:#151515; --ink-3:#202020;
+  --muted:#9a9c99; --muted-2:#6a6c69;
+  --line:rgba(225,225,225,0.10); --line-2:rgba(225,225,225,0.16);
+  --display:"Clash Display",system-ui,sans-serif;
+  --body:"Satoshi",system-ui,sans-serif;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  --r-md:18px; --r-pill:100px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--paper);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0.04;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+::selection{background:var(--green);color:var(--ink);}
+a{color:inherit;text-decoration:none;}
+img{display:block;max-width:100%;}
+
+/* layout */
+.wrap{display:grid;grid-template-columns:248px 1fr;max-width:1480px;margin:0 auto;}
+.side{position:sticky;top:0;align-self:start;height:100vh;border-right:1px solid var(--line);padding:2.2rem 1.6rem;display:flex;flex-direction:column;gap:2rem;overflow-y:auto;}
+.brand{display:flex;align-items:center;gap:0.6rem;}
+.brand img{height:30px;mix-blend-mode:lighten;}
+.brand b{font-family:var(--display);font-weight:600;font-size:1.4rem;letter-spacing:-0.02em;}
+.brand sup{font-size:0.45em;color:var(--muted);}
+.side small{display:block;color:var(--muted-2);font-size:0.74rem;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:0.8rem;}
+.side nav{display:flex;flex-direction:column;gap:0.1rem;}
+.side nav a{font-size:0.94rem;color:var(--muted);padding:0.5rem 0.7rem;border-radius:8px;transition:color .25s,background .25s;}
+.side nav a:hover{color:var(--paper);background:rgba(225,225,225,0.04);}
+.side .tag{margin-top:auto;font-size:0.72rem;color:var(--muted-2);line-height:1.6;}
+
+.main{padding:clamp(2rem,5vw,4.5rem);min-width:0;}
+.head{margin-bottom:4rem;}
+.head h1{font-family:var(--display);font-weight:600;font-size:clamp(2.4rem,5vw,4rem);letter-spacing:-0.03em;line-height:1;}
+.head p{color:var(--muted);margin-top:1rem;max-width:60ch;}
+
+section{padding:3.2rem 0;border-top:1px solid var(--line);}
+.kicker{font-size:0.74rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--green);display:inline-flex;align-items:center;gap:0.8em;margin-bottom:1.8rem;}
+.kicker::before{content:"";width:2rem;height:1px;background:var(--green);opacity:.55;}
+.sec-title{font-family:var(--display);font-weight:600;font-size:clamp(1.6rem,3vw,2.4rem);letter-spacing:-0.02em;margin-bottom:0.6rem;}
+.sec-sub{color:var(--muted);max-width:62ch;margin-bottom:2.2rem;}
+
+/* cores */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1.1rem;}
+.sw{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--ink-2);}
+.sw__chip{height:120px;cursor:pointer;position:relative;}
+.sw__chip::after{content:"copiar";position:absolute;inset:auto 0 0 0;padding:0.4rem 0.7rem;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink);background:rgba(255,255,255,0.0);opacity:0;transition:opacity .25s,background .25s;text-align:right;}
+.sw__chip:hover::after{opacity:.8;}
+.sw__body{padding:0.9rem 1rem 1.1rem;}
+.sw__body b{font-family:var(--display);font-weight:500;font-size:0.95rem;}
+.sw__hex{font-family:var(--body);font-size:0.84rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;margin:0.3rem 0 0.5rem;}
+.sw__use{font-size:0.78rem;color:var(--muted-2);line-height:1.4;}
+.copied{color:var(--green)!important;}
+
+/* tipografia */
+.type-row{display:grid;grid-template-columns:130px 1fr;gap:1.6rem;padding:1.2rem 0;border-bottom:1px solid var(--line);align-items:baseline;}
+.type-row:last-child{border-bottom:none;}
+.type-meta{font-size:0.78rem;color:var(--muted-2);line-height:1.5;}
+.type-sample{font-family:var(--display);font-weight:600;letter-spacing:-0.03em;line-height:1;color:var(--paper);overflow:hidden;}
+.t-hero{font-size:clamp(2.6rem,6vw,5rem);}
+.t-h2{font-size:clamp(2rem,4vw,3.2rem);}
+.t-h3{font-size:1.8rem;}
+.t-lead{font-family:var(--body);font-weight:400;font-size:1.25rem;letter-spacing:0;color:var(--muted);}
+.t-body{font-family:var(--body);font-weight:400;font-size:1rem;letter-spacing:0;line-height:1.55;}
+.t-label{font-family:var(--body);font-weight:500;font-size:0.74rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--green);}
+
+/* espaçamento/raio */
+.bars{display:flex;flex-direction:column;gap:0.7rem;}
+.bar{display:grid;grid-template-columns:130px 1fr;gap:1rem;align-items:center;font-size:0.82rem;color:var(--muted);}
+.bar span{height:14px;background:linear-gradient(90deg,var(--teal),var(--green));border-radius:4px;}
+.radii{display:flex;gap:1.2rem;flex-wrap:wrap;margin-top:1.4rem;}
+.radii div{width:110px;height:80px;border:1px solid var(--line-2);background:var(--ink-3);display:grid;place-items:center;font-size:0.78rem;color:var(--muted);}
+
+/* botões / componentes */
+.row{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:0.6em;font-family:var(--display);font-weight:500;font-size:1rem;letter-spacing:-0.01em;padding:0.95rem 1.8rem;border-radius:var(--r-pill);border:1px solid transparent;transition:background .3s var(--ease),color .3s,border-color .3s,transform .2s var(--ease);cursor:pointer;}
+.btn svg{width:1.05em;height:1.05em;}
+.btn--solid{background:var(--green);color:var(--ink);}
+.btn--solid:hover{background:var(--green-soft);transform:translateY(-2px);}
+.btn--ghost{border-color:var(--line-2);color:var(--paper);}
+.btn--ghost:hover{border-color:var(--green);color:var(--green);transform:translateY(-2px);}
+.btn--lg{font-size:1.12rem;padding:1.15rem 2.4rem;}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;}
+.card{border:1px solid var(--line);border-radius:var(--r-md);padding:2rem 1.8rem;transition:transform .5s var(--ease),border-color .4s,background .4s;}
+.card:hover{transform:translateY(-6px);border-color:rgba(87,204,153,0.3);background:rgba(87,204,153,0.04);}
+.card h4{font-family:var(--display);font-weight:600;font-size:1.3rem;letter-spacing:-0.02em;margin-bottom:0.6rem;}
+.card p{color:var(--muted);font-size:0.92rem;}
+.card--feature{background:radial-gradient(130% 120% at 100% 0%,rgba(10,110,117,0.32),transparent 55%),var(--ink-3);border-color:rgba(87,204,153,0.28);}
+.card__metric{font-family:var(--display);font-weight:600;font-size:3rem;color:var(--green);letter-spacing:-0.04em;line-height:1;margin-bottom:0.8rem;}
+
+.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:1.2rem 0;overflow:hidden;background:var(--ink-2);border-radius:8px;}
+.marquee__track{display:flex;gap:3rem;width:max-content;animation:mq 24s linear infinite;}
+.marquee__track span{font-family:var(--display);font-weight:500;font-size:1.6rem;letter-spacing:-0.02em;color:var(--muted-2);display:inline-flex;align-items:center;gap:3rem;white-space:nowrap;}
+.marquee__track span::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal);}
+@keyframes mq{to{transform:translateX(-50%);}}
+
+.ba{display:grid;grid-template-columns:1fr auto 1fr;gap:1.2rem;align-items:stretch;margin-top:0.5rem;}
+.ba .card{margin:0;}
+.ba__before{background:var(--ink-2);}
+.ba__before h4,.ba__before li{color:var(--muted-2);}
+.ba__after{background:radial-gradient(130% 120% at 100% 0%,rgba(10,110,117,0.3),transparent 55%),var(--ink-3);border-color:rgba(87,204,153,0.28);}
+.ba ul{list-style:none;display:flex;flex-direction:column;gap:0.7rem;margin-top:1rem;font-size:0.92rem;}
+.ba li{display:flex;gap:0.6rem;align-items:flex-start;}
+.ba li svg{width:1rem;height:1rem;flex:0 0 auto;margin-top:0.25rem;}
+.ba__after li svg{color:var(--green);}
+.ba__before li svg{color:var(--muted-2);}
+.ba__arrow{display:grid;place-items:center;color:var(--green);}
+.ba__arrow svg{width:2rem;height:2rem;}
+
+/* tabela motion */
+.tbl{width:100%;border-collapse:collapse;font-size:0.9rem;}
+.tbl th,.tbl td{text-align:left;padding:0.85rem 0.8rem;border-bottom:1px solid var(--line);}
+.tbl th{color:var(--muted-2);font-weight:500;font-size:0.74rem;letter-spacing:0.14em;text-transform:uppercase;}
+.tbl td code{font-family:var(--body);background:var(--ink-3);padding:0.15rem 0.5rem;border-radius:6px;color:var(--green-soft);font-size:0.84rem;}
+
+/* voz: do/don't */
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.dd__col{border:1px solid var(--line);border-radius:var(--r-md);padding:1.8rem;}
+.dd__col h4{font-family:var(--display);font-weight:600;font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+.dd__col ul{list-style:none;display:flex;flex-direction:column;gap:0.7rem;font-size:0.92rem;color:var(--muted);}
+.dd__col li{display:flex;gap:0.6rem;align-items:flex-start;}
+.dd__col li svg{width:1rem;height:1rem;flex:0 0 auto;margin-top:0.25rem;}
+.dd--do h4,.dd--do li svg{color:var(--green);}
+.dd--dont h4,.dd--dont li svg{color:#d98c8c;}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;}
+  .side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;align-items:center;gap:1rem;}
+  .side small,.side .tag{display:none;}
+  .side nav{flex-direction:row;flex-wrap:wrap;}
+  .ba{grid-template-columns:1fr;}
+  .ba__arrow{transform:rotate(90deg);}
+  .dd{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand">
+      <img src="assets/croko-mark.jpeg" alt="Croko" />
+      <b>Croko<sup>™</sup></b>
+    </div>
+    <div>
+      <small>Design System</small>
+      <nav>
+        <a href="#principios">Princípios</a>
+        <a href="#cores">Cores</a>
+        <a href="#tipografia">Tipografia</a>
+        <a href="#espacamento">Espaçamento &amp; raios</a>
+        <a href="#botoes">Botões</a>
+        <a href="#cards">Cards</a>
+        <a href="#componentes">Componentes</a>
+        <a href="#movimento">Movimento</a>
+        <a href="#voz">Voz &amp; cópia</a>
+      </nav>
+    </div>
+    <p class="tag">Fonte da verdade visual.<br />Espelha MASTER.md + tokens.css.</p>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="head">
+      <h1>Design System</h1>
+      <p>Painel visual da identidade digital da Croko. Cores, tipografia, componentes, movimento e regras de cópia — o que de fato sustenta as landing pages.</p>
+    </header>
+
+    <!-- PRINCÍPIOS -->
+    <section id="principios">
+      <span class="kicker">Fundamento</span>
+      <h2 class="sec-title">Princípios</h2>
+      <p class="sec-sub">Quatro regras que guiam toda decisão de interface.</p>
+      <div class="cards">
+        <div class="card"><h4>Premium e escuro</h4><p>Base #1c1c1c, tipografia grande, muito respiro. Padrão de qualidade awwwards.</p></div>
+        <div class="card"><h4>Sem cara de IA</h4><p>Assimetria, grão sutil, detalhes tipográficos, cópia concreta. Nada de gradiente em tudo ou três cards idênticos.</p></div>
+        <div class="card"><h4>Movimento com propósito</h4><p>Animação reforça a narrativa de crescimento, nunca atrapalha leitura ou performance.</p></div>
+        <div class="card"><h4>Prova, não promessa</h4><p>Números e fatos no centro: 46x, 140+, 2 países, 4 segmentos.</p></div>
+      </div>
+    </section>
+
+    <!-- CORES -->
+    <section id="cores">
+      <span class="kicker">Paleta</span>
+      <h2 class="sec-title">Cores</h2>
+      <p class="sec-sub">Clique em qualquer cor para copiar o hex. Texto principal sobre o fundo base tem contraste ~12:1 (AAA).</p>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <!-- TIPOGRAFIA -->
+    <section id="tipografia">
+      <span class="kicker">Tipografia</span>
+      <h2 class="sec-title">Clash Display + Satoshi</h2>
+      <p class="sec-sub">Display marcante para títulos; Satoshi para corpo e labels. Alternativa Google Fonts: Space Grotesk + Inter.</p>
+      <div class="type-row"><div class="type-meta">Hero<br>Clash Display 600</div><div class="type-sample t-hero">Crescimento</div></div>
+      <div class="type-row"><div class="type-meta">Título H2<br>Clash Display 600</div><div class="type-sample t-h2">Prova, não promessa</div></div>
+      <div class="type-row"><div class="type-meta">Título H3<br>Clash Display 600</div><div class="type-sample t-h3">Parceira estratégica</div></div>
+      <div class="type-row"><div class="type-meta">Lead<br>Satoshi 400</div><div class="t-lead">Gestão de tráfego é onde começamos — não onde paramos.</div></div>
+      <div class="type-row"><div class="type-meta">Corpo<br>Satoshi 400</div><div class="t-body">A Croko entra na operação do cliente: lê o negócio, desenha o funil, apoia o comercial e mede o que move receita.</div></div>
+      <div class="type-row"><div class="type-meta">Label<br>Satoshi 500</div><div class="t-label">Agência de crescimento</div></div>
+    </section>
+
+    <!-- ESPAÇAMENTO -->
+    <section id="espacamento">
+      <span class="kicker">Layout</span>
+      <h2 class="sec-title">Espaçamento &amp; raios</h2>
+      <p class="sec-sub">Escala fluida com clamp(). Container 1320px, respiro lateral e vertical responsivos.</p>
+      <div class="bars">
+        <div class="bar"><span style="width:18%"></span><div>gap — 1.5rem</div></div>
+        <div class="bar"><span style="width:40%"></span><div>pad lateral — clamp(1.25rem, 5vw, 6rem)</div></div>
+        <div class="bar"><span style="width:70%"></span><div>respiro de seção — clamp(6rem, 13vw, 11rem)</div></div>
+        <div class="bar"><span style="width:100%"></span><div>container — máx. 1320px</div></div>
+      </div>
+      <div class="radii">
+        <div style="border-radius:10px">10px</div>
+        <div style="border-radius:18px">18px · cards</div>
+        <div style="border-radius:100px">pill · botões</div>
+      </div>
+    </section>
+
+    <!-- BOTÕES -->
+    <section id="botoes">
+      <span class="kicker">Ação</span>
+      <h2 class="sec-title">Botões</h2>
+      <p class="sec-sub">Passe o mouse para ver os estados. Sólido para ação primária, ghost para secundária.</p>
+      <div class="row">
+        <button class="btn btn--solid">Falar com a Croko <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <button class="btn btn--ghost">Ver resultados</button>
+        <button class="btn btn--solid btn--lg">CTA grande <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </section>
+
+    <!-- CARDS -->
+    <section id="cards">
+      <span class="kicker">Superfícies</span>
+      <h2 class="sec-title">Cards</h2>
+      <p class="sec-sub">Card base com hover de elevação; card de destaque com glow radial teal.</p>
+      <div class="cards">
+        <div class="card"><h4>Card base</h4><p>Borda discreta, raio 18px. Hover eleva e esverdeia a borda.</p></div>
+        <div class="card card--feature"><div class="card__metric">46x</div><h4>Card destaque</h4><p>Glow teal para métrica ou case principal.</p></div>
+        <div class="card"><h4>Card base</h4><p>Usado em pilares, serviços e grids de conteúdo.</p></div>
+      </div>
+    </section>
+
+    <!-- COMPONENTES -->
+    <section id="componentes">
+      <span class="kicker">Padrões</span>
+      <h2 class="sec-title">Componentes</h2>
+      <p class="sec-sub">Marquee infinito e bloco antes/depois — peças recorrentes das páginas.</p>
+      <div class="marquee" aria-hidden="true"><div class="marquee__track">
+        <span>Estratégia</span><span>Tráfego pago</span><span>Funil de aquisição</span><span>Automação com IA</span><span>Apoio comercial</span>
+        <span>Estratégia</span><span>Tráfego pago</span><span>Funil de aquisição</span><span>Automação com IA</span><span>Apoio comercial</span>
+      </div></div>
+      <div class="ba">
+        <div class="card ba__before"><h4>Relatório de mídia</h4><ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Cliques como métrica final</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>PDF no fim do mês</li>
+        </ul></div>
+        <div class="ba__arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <div class="card ba__after"><h4>Crescimento</h4><ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>Receita atribuída como métrica</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>Cada real ligado a uma meta</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- MOVIMENTO -->
+    <section id="movimento">
+      <span class="kicker">Motion</span>
+      <h2 class="sec-title">Movimento</h2>
+      <p class="sec-sub">Easing único, durações curtas para hover e longas para reveals. Sempre dentro de prefers-reduced-motion.</p>
+      <table class="tbl">
+        <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td>easing</td><td><code>cubic-bezier(0.16, 1, 0.3, 1)</code></td><td>Entrada/saída padrão</td></tr>
+          <tr><td>micro</td><td><code>150–300ms</code></td><td>Hovers, micro-interações</td></tr>
+          <tr><td>move</td><td><code>~1000ms</code></td><td>Reveals de scroll</td></tr>
+          <tr><td>regra</td><td><code>transform / opacity</code></td><td>Nunca animar width/height</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- VOZ -->
+    <section id="voz">
+      <span class="kicker">Conteúdo</span>
+      <h2 class="sec-title">Voz &amp; cópia</h2>
+      <p class="sec-sub">Regras obrigatórias de conteúdo, validadas com a cliente.</p>
+      <div class="dd">
+        <div class="dd__col dd--do">
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>Fazer</h4>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>Resultado + nicho ("46x — e-commerce de beleza")</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>"Parceira de crescimento", "dentro da operação"</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>Falar em capacidades (automação, IA aplicada, dados)</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>Tom confiante, concreto, frases curtas</li>
+          </ul>
+        </div>
+        <div class="dd__col dd--dont">
+          <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Não fazer</h4>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Citar nomes de clientes</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Usar o termo "sócio/sócia"</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Citar a stack ou nomes de ferramentas</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Emojis, degradê em texto, fees/MRR públicos</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var colors = [
+    {name:"--croko-teal",  hex:"#0a6e75", use:"Primária. Acentos, glows, detalhes, índices.", dark:true},
+    {name:"--croko-green", hex:"#57cc99", use:"Ação. CTAs, números, destaques, ícones.", dark:false},
+    {name:"--croko-green-soft", hex:"#c1e1c2", use:"Hover de CTA, brilhos suaves.", dark:false},
+    {name:"--croko-paper", hex:"#e1e1e1", use:"Texto principal sobre fundo escuro.", dark:false},
+    {name:"--croko-ink",   hex:"#1c1c1c", use:"Fundo base.", dark:true},
+    {name:"--croko-ink-2", hex:"#151515", use:"Faixas/seções alternadas.", dark:true},
+    {name:"--croko-ink-3", hex:"#202020", use:"Cards elevados.", dark:true},
+    {name:"--croko-muted", hex:"#9a9c99", use:"Texto secundário (AA).", dark:false},
+    {name:"--croko-muted-2", hex:"#6a6c69", use:"Texto terciário / labels.", dark:false}
+  ];
+  var box = document.getElementById("swatches");
+  colors.forEach(function(c){
+    var el = document.createElement("div");
+    el.className = "sw";
+    el.innerHTML =
+      '<div class="sw__chip" style="background:'+c.hex+';" data-hex="'+c.hex+'"></div>'+
+      '<div class="sw__body"><b>'+c.name+'</b>'+
+      '<div class="sw__hex"><span class="js-hex">'+c.hex+'</span></div>'+
+      '<div class="sw__use">'+c.use+'</div></div>';
+    box.appendChild(el);
+  });
+  box.addEventListener("click", function(e){
+    var chip = e.target.closest(".sw__chip");
+    if(!chip) return;
+    var hex = chip.dataset.hex;
+    var label = chip.parentNode.querySelector(".js-hex");
+    var write = navigator.clipboard ? navigator.clipboard.writeText(hex) : Promise.reject();
+    write.then(function(){
+      var old = label.textContent;
+      label.textContent = "copiado";
+      label.classList.add("copied");
+      setTimeout(function(){ label.textContent = old; label.classList.remove("copied"); }, 1200);
+    }).catch(function(){
+      label.textContent = hex;
+    });
+  });
+})();
+</script>
+</body>
+</html>

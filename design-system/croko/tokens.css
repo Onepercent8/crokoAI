@@ -1,0 +1,64 @@
+/* ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+   CROKO — Design Tokens
+   Fonte da verdade das variáveis de marca. Importe antes do CSS do site:
+     <link rel="stylesheet" href="tokens.css" />
+   ou copie o bloco :root para o topo da folha de estilo.
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ */
+
+:root {
+  /* ── Cores de marca ── */
+  --croko-teal:        #0a6e75; /* primária — acentos, glows, detalhes */
+  --croko-green:       #57cc99; /* ação — CTAs, destaques, números */
+  --croko-green-soft:  #c1e1c2; /* hover de CTA, brilhos suaves */
+  --croko-paper:       #e1e1e1; /* texto principal sobre fundo escuro */
+  --croko-ink:         #1c1c1c; /* fundo base */
+
+  /* ── Tons derivados (uso interno de UI) ── */
+  --croko-ink-2:       #151515; /* faixas/seções alternadas */
+  --croko-ink-3:       #202020; /* cards elevados */
+  --croko-muted:       #9a9c99; /* texto secundário (contraste ~5.8:1 sobre ink) */
+  --croko-muted-2:     #6a6c69; /* texto terciário / labels discretos */
+  --croko-line:        rgba(225, 225, 225, 0.10); /* divisórias */
+  --croko-line-2:      rgba(225, 225, 225, 0.16); /* divisórias com ênfase */
+
+  /* ── Tipografia ── */
+  --croko-font-display: "Clash Display", "Space Grotesk", system-ui, sans-serif;
+  --croko-font-body:    "Satoshi", "Inter", system-ui, sans-serif;
+  /* Escala display (clamp fluido) */
+  --croko-fs-hero:    clamp(3rem, 9.5vw, 9.5rem);
+  --croko-fs-h2:      clamp(2.2rem, 5.5vw, 4.4rem);
+  --croko-fs-h3:      clamp(1.4rem, 2.8vw, 2.1rem);
+  --croko-fs-lead:    clamp(1.05rem, 1.6vw, 1.3rem);
+  --croko-fs-body:    1rem;
+  --croko-fs-label:   0.74rem;
+  /* Tracking */
+  --croko-track-display: -0.03em;
+  --croko-track-label:   0.22em;
+
+  /* ── Espaçamento & layout ── */
+  --croko-maxw:    1320px;
+  --croko-pad:     clamp(1.25rem, 5vw, 6rem); /* respiro lateral das seções */
+  --croko-gap:     1.5rem;
+  --croko-sec-y:   clamp(6rem, 13vw, 11rem);  /* respiro vertical das seções */
+
+  /* ── Raios ── */
+  --croko-r-sm:  10px;
+  --croko-r-md:  18px;  /* cards */
+  --croko-r-pill: 100px; /* botões, chips */
+
+  /* ── Movimento ── */
+  --croko-ease:      cubic-bezier(0.16, 1, 0.3, 1); /* entrada/saída padrão */
+  --croko-ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --croko-dur-micro: 200ms; /* hovers, micro-interações (150–300ms) */
+  --croko-dur-move:  1000ms; /* reveals de scroll */
+
+  /* ── Camadas (z-index) ── */
+  --croko-z-grain:    4;
+  --croko-z-nav:      150;
+  --croko-z-progress: 200;
+  --croko-z-cursor:   9999;
+
+  /* ── Sombras / brilhos ── */
+  --croko-glow-teal:  0 0 120px rgba(10, 110, 117, 0.50);
+  --croko-glow-green: 0 0 60px rgba(87, 204, 153, 0.25);
+}
