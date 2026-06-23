@@ -34,3 +34,6 @@ supabase/.temp/
 # === Artefatos de runtime das skills ==========================================
 tentativas-geracao-de-campanhas/
 .claude/logs/
+
+# === Claude Code (config pessoal — settings.json compartilhado é versionado) ===
+.claude/settings.local.json
