@@ -1,0 +1,191 @@
+{
+  "checkoutUrl": "https://checkout.example.com/curso-exemplo",
+  "locale": "pt",
+  "metaDescription": "A landing page de demonstracao do curso-exemplo da Acme.",
+  "noindex": true,
+  "priceCents": 19700,
+  "priceDisplay": "197,00",
+  "sections": [
+    {
+      "fields": {
+        "eyebrow": "Curso online",
+        "headline": "Domine o assunto com o curso-exemplo",
+        "primaryCta": {
+          "href": "https://checkout.example.com/curso-exemplo",
+          "label": "Quero me inscrever"
+        },
+        "secondaryCta": {
+          "href": "https://example.com/curso-exemplo",
+          "label": "Ver conteudo"
+        },
+        "subheadline": "O metodo da Acme para voce sair do zero ao avancado."
+      },
+      "key": "hero.0",
+      "position": 0,
+      "type": "hero",
+      "version": 1
+    },
+    {
+      "fields": {
+        "items": [
+          {
+            "description": "Estude quando e onde quiser.",
+            "icon": "star",
+            "title": "Acesso vitalicio"
+          },
+          {
+            "description": "Tire duvidas com a equipe da Acme.",
+            "icon": "chat",
+            "title": "Suporte direto"
+          },
+          {
+            "description": "Comprove sua nova habilidade.",
+            "icon": "cap",
+            "title": "Certificado"
+          }
+        ],
+        "subtitle": "Resultados concretos, no seu ritmo.",
+        "title": "O que voce conquista"
+      },
+      "key": "benefits.1",
+      "position": 1,
+      "type": "benefits",
+      "version": 1
+    },
+    {
+      "fields": {
+        "steps": [
+          {
+            "description": "Garanta sua vaga em minutos.",
+            "step": 1,
+            "title": "Inscreva-se"
+          },
+          {
+            "description": "Siga a trilha de aulas praticas.",
+            "step": 2,
+            "title": "Estude"
+          },
+          {
+            "description": "Coloque em pratica e veja resultados.",
+            "step": 3,
+            "title": "Aplique"
+          }
+        ],
+        "title": "Como funciona"
+      },
+      "key": "how_it_works.2",
+      "position": 2,
+      "type": "how_it_works",
+      "version": 1
+    },
+    {
+      "fields": {
+        "items": [
+          {
+            "author": "Aluno Exemplo",
+            "quote": "O melhor investimento que fiz na minha carreira.",
+            "rating": 5,
+            "role": "Profissional"
+          }
+        ],
+        "title": "Quem fez, recomenda"
+      },
+      "key": "testimonials.3",
+      "position": 3,
+      "type": "testimonials",
+      "version": 1
+    },
+    {
+      "fields": {
+        "plans": [
+          {
+            "cta": {
+              "href": "https://checkout.example.com/curso-exemplo",
+              "label": "Comprar agora"
+            },
+            "features": [
+              "Todas as aulas",
+              "Acesso vitalicio",
+              "Certificado"
+            ],
+            "highlighted": true,
+            "name": "Acesso completo",
+            "period": "unico",
+            "priceCents": 19700
+          }
+        ],
+        "title": "Escolha seu acesso"
+      },
+      "key": "pricing.4",
+      "position": 4,
+      "type": "pricing",
+      "version": 1
+    },
+    {
+      "fields": {
+        "days": 7,
+        "description": "Nao gostou? Devolvemos 100% do valor, sem perguntas.",
+        "title": "Garantia de 7 dias"
+      },
+      "key": "guarantee.5",
+      "position": 5,
+      "type": "guarantee",
+      "version": 1
+    },
+    {
+      "fields": {
+        "items": [
+          {
+            "answer": "O acesso e vitalicio.",
+            "question": "Por quanto tempo tenho acesso?"
+          },
+          {
+            "answer": "Sim, 7 dias de garantia incondicional.",
+            "question": "Existe garantia?"
+          }
+        ],
+        "title": "Perguntas frequentes"
+      },
+      "key": "faq.6",
+      "position": 6,
+      "type": "faq",
+      "version": 1
+    },
+    {
+      "fields": {
+        "cta": {
+          "href": "https://checkout.example.com/curso-exemplo",
+          "label": "Quero me inscrever"
+        },
+        "subtitle": "Junte-se aos alunos da Acme hoje.",
+        "title": "Pronto para comecar?"
+      },
+      "key": "cta.7",
+      "position": 7,
+      "type": "cta",
+      "version": 1
+    },
+    {
+      "fields": {
+        "companyName": "Acme",
+        "legalText": "Acme. Conteudo de demonstracao - placeholders do template.",
+        "links": [
+          {
+            "href": "https://example.com/termos",
+            "label": "Termos"
+          },
+          {
+            "href": "https://example.com/privacidade",
+            "label": "Privacidade"
+          }
+        ],
+        "tagline": "Educacao que transforma."
+      },
+      "key": "footer.8",
+      "position": 8,
+      "type": "footer",
+      "version": 1
+    }
+  ],
+  "title": "Curso Exemplo - Acme"
+}

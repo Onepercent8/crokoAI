@@ -9,7 +9,9 @@
   },
   "workspaces": [
     "web",
-    "packages/*"
+    "packages/*",
+    "landing-pages/_template",
+    "worker/*"
   ],
   "scripts": {
     "lint": "eslint . && npm run lint --workspaces --if-present",

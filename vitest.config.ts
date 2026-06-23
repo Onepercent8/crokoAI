@@ -10,7 +10,18 @@ export default defineConfig({
     include: ['**/*.{test,spec}.ts'],
     // web/ e packages/* têm vitest próprio (rodam via `npm run test --workspaces`).
     // O vitest raiz cobre só o nível raiz para não herdar env/config dos workspaces.
-    exclude: ['node_modules', 'venv', 'dist', 'build', '.next', 'out', 'web/**', 'packages/**'],
+    exclude: [
+      'node_modules',
+      'venv',
+      'dist',
+      'build',
+      '.next',
+      'out',
+      'web/**',
+      'packages/**',
+      'landing-pages/**',
+      'worker/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

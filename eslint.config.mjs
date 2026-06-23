@@ -18,6 +18,8 @@ export default tseslint.config(
       // os packages rodam typecheck + vitest. O eslint raiz cobre só o nível raiz.
       'web/**',
       'packages/**',
+      'landing-pages/**',
+      'worker/**',
     ],
   },
   js.configs.recommended,

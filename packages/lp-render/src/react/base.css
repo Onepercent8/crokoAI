@@ -1,0 +1,341 @@
+/*
+ * Base structural styles for rendered landing pages (SPEC-011).
+ *
+ * Consumes the CSS custom properties emitted by the serializer in `theme.css`
+ * (`--color-*`, `--font-*`, `--radius`, `--shadow`). Visual identity (Croko by
+ * default) lives in theme.css; layout/spacing live here. Imported by the
+ * `landing-pages/_template`. No brand text — placeholders only.
+ */
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background, #1c1c1c);
+  color: var(--color-foreground, #e1e1e1);
+  font-family: var(--font-body, system-ui, sans-serif);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading, system-ui, sans-serif);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+a {
+  color: var(--color-accent, #57cc99);
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.lp-container {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.lp-section {
+  padding: 4rem 0;
+}
+
+.lp-section--hero {
+  padding-top: 6rem;
+}
+
+.lp-section-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  margin: 0 0 0.75rem;
+}
+
+.lp-section-subtitle {
+  font-size: 1.125rem;
+  opacity: 0.8;
+  margin: 0 0 2rem;
+}
+
+.lp-headline {
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  margin: 0.5rem 0 1rem;
+}
+
+.lp-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  color: var(--color-primary, #0a6e75);
+  margin: 0;
+}
+
+.lp-subheadline {
+  font-size: 1.25rem;
+  opacity: 0.85;
+  margin: 0 0 1.5rem;
+}
+
+.lp-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.lp-btn {
+  display: inline-block;
+  padding: 0.85rem 1.6rem;
+  border-radius: var(--radius, 16px);
+  font-weight: 600;
+  box-shadow: var(--shadow, none);
+  transition:
+    transform 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.lp-btn:hover {
+  transform: translateY(-1px);
+}
+
+.lp-btn--primary {
+  background: var(--color-accent, #57cc99);
+  color: #1c1c1c;
+}
+
+.lp-btn--secondary {
+  background: transparent;
+  border: 1px solid currentColor;
+  color: var(--color-foreground, #e1e1e1);
+}
+
+.lp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lp-card {
+  background: color-mix(in srgb, var(--color-foreground, #e1e1e1) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-foreground, #e1e1e1) 12%, transparent);
+  border-radius: var(--radius, 16px);
+  padding: 1.5rem;
+}
+
+.lp-card h3 {
+  margin: 0.5rem 0;
+}
+
+.lp-icon {
+  font-size: 1.5rem;
+}
+
+.lp-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: center;
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  opacity: 0.85;
+}
+
+.lp-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.lp-step {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.lp-step-num {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--color-primary, #0a6e75);
+  color: #fff;
+  font-weight: 700;
+}
+
+.lp-quote blockquote {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.lp-quote figcaption {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lp-quote figcaption img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.lp-quote figcaption em {
+  display: block;
+  opacity: 0.7;
+  font-style: normal;
+  font-size: 0.9rem;
+}
+
+.lp-rating {
+  color: var(--color-accent, #57cc99);
+}
+
+.lp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  text-align: center;
+}
+
+.lp-stat-value {
+  display: block;
+  font-size: 2.5rem;
+  font-family: var(--font-heading, system-ui, sans-serif);
+  color: var(--color-primary, #0a6e75);
+}
+
+.lp-stat-label {
+  opacity: 0.8;
+}
+
+.lp-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lp-plan--featured {
+  border-color: var(--color-accent, #57cc99);
+  box-shadow: var(--shadow, none);
+}
+
+.lp-price {
+  font-size: 2rem;
+  font-family: var(--font-heading, system-ui, sans-serif);
+}
+
+.lp-period {
+  font-size: 1rem;
+  opacity: 0.7;
+}
+
+.lp-compare-price {
+  opacity: 0.6;
+  font-size: 1.25rem;
+}
+
+.lp-plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lp-faq {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.lp-faq-item {
+  border: 1px solid color-mix(in srgb, var(--color-foreground, #e1e1e1) 12%, transparent);
+  border-radius: var(--radius, 16px);
+  padding: 1rem 1.25rem;
+}
+
+.lp-faq-item summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.lp-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 28rem;
+}
+
+.lp-form label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.lp-form input,
+.lp-form textarea {
+  padding: 0.75rem;
+  border-radius: var(--radius, 16px);
+  border: 1px solid color-mix(in srgb, var(--color-foreground, #e1e1e1) 25%, transparent);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.lp-consent {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.lp-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+}
+
+.lp-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: var(--radius, 16px);
+}
+
+.lp-section--footer {
+  border-top: 1px solid color-mix(in srgb, var(--color-foreground, #e1e1e1) 12%, transparent);
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.lp-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0;
+}
+
+.lp-footer-legal {
+  opacity: 0.6;
+  font-size: 0.8rem;
+}
