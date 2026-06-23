@@ -1,0 +1,41 @@
+{
+  "slug": "create-traffic-cliente-exemplo-campaign",
+  "kind": "create",
+  "wave": 2,
+  "spec": "docs/specs/create-traffic-campaign.md",
+  "headless_safe": true,
+  "uses_ask_user_question": false,
+  "client_slug": "cliente-exemplo",
+  "objective": "OUTCOME_TRAFFIC",
+  "campaign_status_on_create": "PAUSED",
+  "persistence": {
+    "mode": "supabase-rest",
+    "auth_env": ["SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+    "uses_supabase_mcp": false,
+    "writes_tables": [
+      "campaigns",
+      "ad_sets",
+      "creatives",
+      "ads",
+      "generated_images",
+      "operation_logs"
+    ]
+  },
+  "meta_writes_via": "mcp-meta-ads",
+  "subagents": ["scrape-extractor", "copywriter", "image-prompt-generator"],
+  "skills": ["image-generate"],
+  "library": "@template/skill-kit",
+  "idempotency": {
+    "key_source": "arg-or-derived",
+    "derived_from": ["client_slug", "product_slug", "utc-day"]
+  },
+  "manifest_dir": "tentativas-geracao-de-campanhas",
+  "args_schema": {
+    "client_slug": "slug ^[a-z0-9-]+$ (required)",
+    "product_slug": "slug ^[a-z0-9-]+$ (required)",
+    "daily_budget_cents": "integer cents, positive (optional, clamped to cap)",
+    "budget_mode": "CBO | ABO (default CBO)",
+    "idempotency_key": "string >= 8 chars (optional, derived if absent)"
+  },
+  "status": "scaffold"
+}
