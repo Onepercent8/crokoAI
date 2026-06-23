@@ -1,0 +1,34 @@
+{
+  "name": "@template/lp-render",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Fonte única dos tipos ContentDoc/Theme/Settings, catálogo das 17 seções da landing page, serializer e libs de domínio de apresentação (checkout/affiliate/utm/consent). Domínio puro, sem I/O (SPEC-000 §8, ADR 0013/0017).",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}
