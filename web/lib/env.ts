@@ -36,12 +36,22 @@ const serverEnvSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
   // Cloudflare Turnstile — optional anti-bot on login.
   CLOUDFLARE_TURNSTILE_SECRET_KEY: optionalNonEmpty,
+  // Nexus assistant (Wave 7). All optional: absent keys disable the relevant
+  // pipeline stage gracefully so the dashboard still boots offline.
+  CLAUDE_API_KEY: optionalNonEmpty, // Anthropic SDK (chat loop)
+  NEXUS_MODEL: optionalNonEmpty, // default claude-sonnet-4-6
+  NEXUS_REVIEW_MODEL: optionalNonEmpty, // default claude-sonnet-4-6
+  OPENAI_API_KEY: optionalNonEmpty, // Whisper STT
+  ELEVENLABS_API_KEY: optionalNonEmpty, // TTS
+  ELEVENLABS_VOICE_ID: optionalNonEmpty,
 });
 
 const publicEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY: optionalNonEmpty,
+  // Picovoice wake-word access key — client-side key, NOT a backend secret.
+  NEXT_PUBLIC_PICOVOICE_ACCESS_KEY: optionalNonEmpty,
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -95,6 +105,7 @@ export function getPublicEnv(): PublicEnv {
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
       NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY:
         process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY,
+      NEXT_PUBLIC_PICOVOICE_ACCESS_KEY: process.env.NEXT_PUBLIC_PICOVOICE_ACCESS_KEY,
     });
   }
   return cachedPublicEnv;

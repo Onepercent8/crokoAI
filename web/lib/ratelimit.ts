@@ -50,3 +50,29 @@ export async function checkLoginRatelimit(
   const { success, remaining } = await getLoginRatelimit().limit(identifier);
   return { success, remaining };
 }
+
+let cachedNexusLimiter: Ratelimit | undefined;
+
+/**
+ * Nexus limiter: external-API endpoints (chat/stt/tts) and enqueue (confirm)
+ * cost money / hit the queue, so we cap them per session. 30 requests/minute.
+ */
+export function getNexusRatelimit(): Ratelimit {
+  if (cachedNexusLimiter === undefined) {
+    cachedNexusLimiter = new Ratelimit({
+      redis: getRedis(),
+      limiter: Ratelimit.slidingWindow(30, '60 s'),
+      prefix: 'rl:nexus',
+      analytics: false,
+    });
+  }
+  return cachedNexusLimiter;
+}
+
+/** Run the Nexus limiter for an identifier (typically the session id). */
+export async function checkNexusRatelimit(
+  identifier: string,
+): Promise<{ success: boolean; remaining: number }> {
+  const { success, remaining } = await getNexusRatelimit().limit(identifier);
+  return { success, remaining };
+}

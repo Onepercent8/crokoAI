@@ -13,8 +13,25 @@ import {
 } from '@/lib/auth/session';
 import { isTurnstileEnabled, verifyTurnstile } from '@/lib/auth/turnstile';
 import { getServerEnv } from '@/lib/env';
-import { checkLoginRatelimit } from '@/lib/ratelimit';
+import {
+  CaptureRequest,
+  ChatRequest,
+  ConfirmRequest,
+  NarrationsQuery,
+  TtsRequest,
+} from '@/lib/nexus/schemas';
+import {
+  getSttClient,
+  getTtsClient,
+  getTtsVoiceId,
+  nexusCapture,
+  nexusChatTurn,
+  nexusConfirm,
+  nexusReadCapture,
+} from '@/lib/nexus/runtime';
+import { checkLoginRatelimit, checkNexusRatelimit } from '@/lib/ratelimit';
 import { listAnalyses } from '@/lib/services/analyses';
+import { listNarrations } from '@/lib/services/narrations';
 import { listCampaigns } from '@/lib/services/campaigns';
 import { getClientBySlug, listClients } from '@/lib/services/clients';
 import { listFunnelEvents } from '@/lib/services/funnel';
@@ -118,6 +135,8 @@ app.use('/campaigns', operatorGuard);
 app.use('/analyses', operatorGuard);
 app.use('/funnel', operatorGuard);
 app.use('/logs/*', operatorGuard);
+// Every Nexus route requires a valid operator session (no anonymous access).
+app.use('/nexus/*', operatorGuard);
 
 /** Hono middleware enforcing a valid operator session (auth + authz). */
 async function operatorGuard(
@@ -199,6 +218,138 @@ app.get('/logs/events', async (c) => {
     return c.json({ error: 'invalid_request' }, 400);
   }
   return c.json({ events: await listAgentEvents(parsed.data.runId) });
+});
+
+// --- Nexus assistant (Wave 7, SPEC-016) -------------------------------------
+//
+// Order on every handler: auth (operatorGuard, above) -> rate limit -> Zod
+// validation -> logic. Reads execute directly; writes only propose a draft that
+// is enqueued on a SEPARATE /nexus/confirm call (two-turn confirmation). The
+// skill name is resolved by a server-side slug allowlist; voice/screen content
+// is treated as untrusted DATA.
+
+/** Rate-limit a Nexus request by session id; returns a 429 Response or null. */
+async function nexusRateGate(sessionId: string): Promise<Response | null> {
+  const rl = await checkNexusRatelimit(sessionId);
+  return rl.success
+    ? null
+    : new Response(JSON.stringify({ error: 'too_many_requests' }), {
+        status: 429,
+        headers: { 'content-type': 'application/json' },
+      });
+}
+
+app.post('/nexus/chat', async (c) => {
+  const parsed = ChatRequest.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  const limited = await nexusRateGate(parsed.data.session_id);
+  if (limited) {
+    return limited;
+  }
+
+  // Resolve any referenced screen context (ephemeral, untrusted data).
+  let screenContext: string | undefined;
+  if (parsed.data.screen_context_id !== undefined) {
+    screenContext =
+      (await nexusReadCapture(parsed.data.session_id, parsed.data.screen_context_id)) ?? undefined;
+  }
+
+  const result = await nexusChatTurn({
+    sessionId: parsed.data.session_id,
+    message: parsed.data.message,
+    ...(screenContext !== undefined ? { screenContext } : {}),
+  });
+  return c.json({
+    session_id: parsed.data.session_id,
+    reply: result.reply,
+    pending_action: result.pendingAction,
+    tool_reads: result.toolReads,
+  });
+});
+
+app.post('/nexus/confirm', async (c) => {
+  const parsed = ConfirmRequest.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  const limited = await nexusRateGate(parsed.data.session_id);
+  if (limited) {
+    return limited;
+  }
+  const result = await nexusConfirm(parsed.data.session_id, parsed.data.action_id);
+  return c.json(result);
+});
+
+app.post('/nexus/stt', async (c) => {
+  const sessionId = c.req.header('x-nexus-session') ?? '';
+  if (sessionId.length === 0) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  const limited = await nexusRateGate(sessionId);
+  if (limited) {
+    return limited;
+  }
+  const contentType = c.req.header('content-type') ?? 'application/octet-stream';
+  const audio = await c.req.arrayBuffer();
+  if (audio.byteLength === 0) {
+    return c.json({ error: 'empty_audio' }, 422);
+  }
+  try {
+    const result = await getSttClient().transcribe(audio, contentType);
+    return c.json({ text: result.text, duration_ms: result.durationMs });
+  } catch {
+    return c.json({ error: 'stt_failed' }, 422);
+  }
+});
+
+app.post('/nexus/tts', async (c) => {
+  const parsed = TtsRequest.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  const sessionId = c.req.header('x-nexus-session') ?? 'tts';
+  const limited = await nexusRateGate(sessionId);
+  if (limited) {
+    return limited;
+  }
+  try {
+    const voiceId = parsed.data.voice_id ?? getTtsVoiceId();
+    const result = await getTtsClient().synthesize(parsed.data.text, voiceId);
+    return new Response(result.audio, {
+      status: 200,
+      headers: { 'content-type': result.contentType },
+    });
+  } catch {
+    // Degrade gracefully: the client falls back to the text reply.
+    return c.json({ error: 'tts_unavailable' }, 503);
+  }
+});
+
+app.post('/nexus/capture', async (c) => {
+  const parsed = CaptureRequest.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  const limited = await nexusRateGate(parsed.data.session_id);
+  if (limited) {
+    return limited;
+  }
+  // The frame is untrusted data; we store only a labelled reference to it.
+  const screenContextId = await nexusCapture(
+    parsed.data.session_id,
+    `[screen capture received at ${new Date().toISOString()}]`,
+  );
+  return c.json({ screen_context_id: screenContextId });
+});
+
+app.get('/nexus/narrations', async (c) => {
+  const parsed = NarrationsQuery.safeParse({ session_id: c.req.query('session_id') });
+  if (!parsed.success) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  return c.json({ items: await listNarrations(parsed.data.session_id) });
 });
 
 export const GET = handle(app);

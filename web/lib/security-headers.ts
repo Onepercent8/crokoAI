@@ -34,6 +34,9 @@ export function buildCsp(nonce: string): string {
     `style-src 'self' 'nonce-${nonce}'`,
     `img-src 'self' data: blob:`,
     `font-src 'self'`,
+    // `media-src blob:` lets the Nexus widget play TTS audio fetched from our
+    // own API (returned as a binary Response and wrapped in a blob URL).
+    `media-src 'self' blob:`,
     `connect-src 'self'`,
     `frame-src https://challenges.cloudflare.com`,
     `frame-ancestors 'none'`,

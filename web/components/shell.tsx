@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { NexusWidget } from './nexus/widget';
+
 /**
  * Minimal authenticated layout shell with primary navigation.
  * Server Component; no client-side data fetching.
@@ -34,6 +36,7 @@ export function Shell({ title, children }: { title: string; children: ReactNode 
         <h1 className="text-2xl font-semibold">{title}</h1>
       </header>
       <main className="flex flex-col gap-6">{children}</main>
+      <NexusWidget />
     </div>
   );
 }
