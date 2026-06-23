@@ -1,0 +1,41 @@
+{
+  "slug": "funnel-analytics-cliente-exemplo-campaign",
+  "kind": "analyze",
+  "wave": 4,
+  "spec": "docs/specs/meta-ads-funnel-analytics.md",
+  "headless_safe": true,
+  "uses_ask_user_question": false,
+  "client_slug": "cliente-exemplo",
+  "meta_access": "read-only",
+  "meta_writes_via": null,
+  "persistence": {
+    "mode": "supabase-rest",
+    "auth_env": ["SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+    "uses_supabase_mcp": false,
+    "writes_tables": [
+      "analyses",
+      "metric_snapshots",
+      "analysis_findings",
+      "funnel_events",
+      "operation_logs"
+    ]
+  },
+  "library": "@template/skill-kit",
+  "funnel_steps": [
+    "impression",
+    "link_click",
+    "landing_page_view",
+    "view_content",
+    "add_to_cart",
+    "initiate_checkout",
+    "purchase"
+  ],
+  "manifest_dir": "tentativas-geracao-de-campanhas",
+  "args_schema": {
+    "client_slug": "slug ^[a-z0-9-]+$ (required)",
+    "window_days": "integer 1..90 (default 7)",
+    "compare_window": "boolean (default true)",
+    "triggered_by": "cron | nexus | manual (default cron)"
+  },
+  "status": "scaffold"
+}

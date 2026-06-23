@@ -21,6 +21,11 @@ export * from './application/build-rows.js';
 export * from './application/check-idempotency.js';
 export * from './application/ports.js';
 export * from './application/orchestrate-traffic.js';
+// analytics (wave 4)
+export * from './domain/funnel.js';
+export * from './domain/verdict.js';
+export * from './application/analytics-args.js';
+export * from './application/orchestrate-analytics.js';
 
 // infrastructure
 export * from './infrastructure/supabase-rest.js';

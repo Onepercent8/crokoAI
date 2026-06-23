@@ -1,0 +1,32 @@
+{
+  "slug": "daily-summary-cliente-exemplo",
+  "kind": "summarize",
+  "wave": 4,
+  "spec": "docs/specs/meta-ads-funnel-analytics.md",
+  "headless_safe": true,
+  "uses_ask_user_question": false,
+  "client_slug": "cliente-exemplo",
+  "meta_access": "none",
+  "persistence": {
+    "mode": "supabase-rest",
+    "auth_env": ["SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+    "uses_supabase_mcp": false,
+    "upsert_table": "daily_summaries",
+    "upsert_conflict": "client_id,summary_date",
+    "writes_tables": ["daily_summaries", "operation_logs"]
+  },
+  "notify": {
+    "channel": "telegram",
+    "optional": true,
+    "fallback": "log-only",
+    "auth_env": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"]
+  },
+  "library": "@template/skill-kit",
+  "manifest_dir": "tentativas-geracao-de-campanhas",
+  "args_schema": {
+    "client_slug": "slug ^[a-z0-9-]+$ (required)",
+    "summary_date": "YYYY-MM-DD (required)",
+    "notify_telegram": "boolean (default false)"
+  },
+  "status": "scaffold"
+}
