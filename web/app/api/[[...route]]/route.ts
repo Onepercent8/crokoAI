@@ -3,6 +3,7 @@ import { getCookie, setCookie } from 'hono/cookie';
 import { handle } from 'hono/vercel';
 import { z } from 'zod';
 
+import { parseLoginBody, responseModeFor } from '@/lib/auth/login-request';
 import { verifyPassword } from '@/lib/auth/password';
 import {
   issueSession,
@@ -36,41 +37,55 @@ const app = new Hono().basePath('/api');
 
 // --- Auth (public, rate limited) -------------------------------------------
 
-const loginBodySchema = z.object({
-  password: z.string().min(1).max(512),
-  turnstileToken: z.string().max(4096).optional(),
-});
-
 app.post('/auth/login', async (c) => {
   const env = getServerEnv();
+
+  // The form degrades to a native POST when JS has not hydrated (NOTES §7): we
+  // accept both `application/json` (fetch) and `application/x-www-form-urlencoded`
+  // (no-JS form) so the password is NEVER placed in the URL. The response mode
+  // mirrors the client: JSON for fetch, an HTTP redirect for a navigating form.
+  const contentType = c.req.header('content-type');
+  const mode = responseModeFor(contentType);
+
+  const fail = (status: 400 | 401 | 429, error: string): Response => {
+    if (mode === 'redirect') {
+      // Bounce back to the login page (no password in the query) so the no-JS
+      // user sees the page again instead of raw JSON.
+      return c.redirect('/login?error=1', 303);
+    }
+    return c.json({ error }, status);
+  };
 
   // rate limit (per IP) — first line against brute force.
   const ip = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
   const rl = await checkLoginRatelimit(ip);
   if (!rl.success) {
-    return c.json({ error: 'too_many_requests' }, 429);
+    return fail(429, 'too_many_requests');
   }
 
-  // validation (Zod) — body is data, not instruction.
-  const parsed = loginBodySchema.safeParse(await c.req.json().catch(() => null));
-  if (!parsed.success) {
-    return c.json({ error: 'invalid_request' }, 400);
+  // validation (Zod) — body is data, not instruction. Read the raw text for the
+  // form path; the JSON path parses an object.
+  const raw =
+    mode === 'json' ? await c.req.json().catch(() => null) : await c.req.text().catch(() => '');
+  const body = parseLoginBody(contentType, raw);
+  if (body === null) {
+    return fail(400, 'invalid_request');
   }
 
   // Turnstile (optional) — only enforced when a secret is configured.
   const turnstileSecret = env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
   if (isTurnstileEnabled(turnstileSecret)) {
-    const token = parsed.data.turnstileToken;
+    const token = body.turnstileToken;
     const ok = token !== undefined && (await verifyTurnstile(token, turnstileSecret as string, ip));
     if (!ok) {
-      return c.json({ error: 'unauthorized' }, 401);
+      return fail(401, 'unauthorized');
     }
   }
 
   // logic: constant-time hash comparison.
-  const valid = await verifyPassword(parsed.data.password, env.DASHBOARD_PASSWORD);
+  const valid = await verifyPassword(body.password, env.DASHBOARD_PASSWORD);
   if (!valid) {
-    return c.json({ error: 'unauthorized' }, 401);
+    return fail(401, 'unauthorized');
   }
 
   const jwt = await issueSession(env.AUTH_SECRET);
@@ -81,7 +96,7 @@ app.post('/auth/login', async (c) => {
     path: '/',
     maxAge: SESSION_TTL_SECONDS,
   });
-  return c.json({ ok: true });
+  return mode === 'redirect' ? c.redirect('/', 303) : c.json({ ok: true });
 });
 
 app.post('/auth/logout', (c) => {

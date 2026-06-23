@@ -42,7 +42,16 @@ export function LoginForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-3">
+    // `action` + `method="POST"` make the form degrade gracefully without JS:
+    // a native submit POSTs (never GET), so the password is never placed in the
+    // URL (NOTES §7). When JS is present, `onSubmit` preventDefaults and uses
+    // fetch instead. The endpoint accepts both JSON and form-encoded bodies.
+    <form
+      action="/api/auth/login"
+      method="POST"
+      onSubmit={onSubmit}
+      className="mt-6 flex flex-col gap-3"
+    >
       <label className="text-sm font-medium" htmlFor="password">
         Senha
       </label>
