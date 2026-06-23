@@ -5,7 +5,8 @@
 > Fontes irmãs: [`SPEC-000-build-from-scratch.md`](./SPEC-000-build-from-scratch.md) (a planta),
 > [`WAVES.md`](./WAVES.md) (roadmap + status), [`CLAUDE.md`](./CLAUDE.md) (convenções).
 >
-> **Última atualização:** 2026-06-22 · **Wave atual:** 1 concluída ✅ → próxima é a **Wave 2**.
+> **Última atualização:** 2026-06-23 · **Wave atual:** 1 concluída ✅ → próxima é a **Wave 2**.
+> **Commits:** 4 (`wave 0` → `mark wave 0` → `NOTES` → `wave 1 supabase data layer`).
 
 ---
 
@@ -35,7 +36,9 @@
 
 ---
 
-## 3. Decisões de implementação (tomadas durante a Wave 0)
+## 3. Decisões de implementação (Waves 0–1)
+
+### Wave 0 (tooling/scaffold)
 
 | Decisão | Por quê | Onde / impacto futuro |
 |---|---|---|
@@ -46,6 +49,18 @@
 | `src/env-contract.ts` = espelho **tipado** dos nomes de env (REQUIRED/OPTIONAL) | dá input ao `tsc` e serve de fonte única dos nomes | A validação real (Zod, leitura tipada) entra em `web/lib/env.ts` na **Wave 6** |
 | 18 stubs de ADR gerados (status `proposed`) | Docs as Code; reservar numeração da SPEC §13 | Preencher o ADR correspondente ao iniciar cada wave |
 | `.gitignore` ignora `.env*` exceto `.env.example`; ignora `venv/`, `node_modules/`, build outputs, `tentativas-geracao-de-campanhas/`, `.claude/logs/` | segredos fora do git; artefatos de runtime das skills fora do git | — |
+
+### Wave 1 (schema Supabase)
+
+| Decisão | Por quê | Onde / impacto futuro |
+|---|---|---|
+| **Enums via `CHECK` constraint** (não `create type ... enum`) | tipos nativos são chatos de evoluir (`ALTER TYPE` com locks); CHECK evolui por migration simples | Para adicionar um valor de enum: nova migration alterando o CHECK. Documentado no ADR 0004 |
+| **`prevent_mutation()`** trigger em `operation_logs`/`agent_events`/`lp_events` | append-only **não** pode depender de RLS — `service_role` tem `BYPASSRLS` e ignoraria policies | Qualquer nova tabela de log/evento deve receber o mesmo trigger |
+| **`revoke all ... from anon, authenticated`** + `alter default privileges` (migration `...120900`) | RLS sem policy só retorna **vazio**; revoke faz o `select` anon **falhar** com `permission denied` (intenção "só service_role acessa") | Vale também para objetos futuros no schema `public` |
+| **Colunas de scaffolding além da §6**: `id uuid pk`, `created_at`, `updated_at`, `client_id` de escopo, `claimed_by`/`claimed_at` em jobs/watches | a §6 lista "colunas-chave; ver migrations para o DDL exato" → o DDL é a fonte; precisamos de PK/escopo/claim | Manter o padrão nas próximas tabelas |
+| **10 migrations por domínio** (ordem cronológica `20260622120000..120900`) | legibilidade + ordem de FK respeitada por nome de arquivo | Novas tabelas: timestamp posterior; respeitar dependências de FK |
+| **FK `on delete`**: hierarquia Meta CASCADE; `ads→creatives` e `landing_pages→products` RESTRICT; `creatives→generated_images` SET NULL | apagar pai limpa filhos; não apagar algo ainda referenciado; imagem é opcional | Documentado na spec `meta-ads-persistence-schema` |
+| **Seed em `supabase/seed.sql`** (não numa migration) | `config.toml [db.seed]` aplica seed após migrations no `db reset`; mantém DDL ≠ dados | Adicionar mais seeds aqui (idempotentes via `on conflict do nothing`) |
 
 ---
 
@@ -68,6 +83,37 @@
 - **`open-stack-urls.sh`/`.ps1`** pré-existentes: abrem os painéis dos serviços do stack no browser
   (Supabase, Upstash, Fly, Vercel, ElevenLabs, Resend, platform.claude, OpenAI). Útil para a usuária
   criar contas e pegar credenciais.
+
+### Achados da Wave 1 (Supabase local) — IMPORTANTES p/ retomar
+
+- **Supabase CLI v2.72.7** instalada; **Docker Desktop** instalado mas o daemon começou **DOWN** —
+  subi com `open -a Docker` (leva ~30–60s). `supabase start` na 1ª vez **baixa as imagens** (alguns
+  minutos) e **já aplica migrations + seed**.
+- **`supabase db reset --local` FALHA** se o stack não estiver no ar (`supabase start is not running`).
+  Fluxo correto: `supabase start` (sobe + aplica tudo) e, para reaplicar do zero com o stack já no ar,
+  `supabase db reset`.
+- **NÃO há `psql` no PATH do host.** Para rodar SQL, use o `psql` **dentro do container**:
+  `docker exec -i supabase_db_CroKoAI psql -U postgres -d postgres ...` (foi assim que rodei o gate
+  `scripts/verify-wave1.sql`). DB local: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`.
+- **Credenciais locais regeneram** a cada `supabase start` em máquina nova; são **locais-only**
+  (inúteis fora de `localhost`). Studio: `http://127.0.0.1:54323`. O bloco impresso pelo `start` tem
+  `Publishable`/`Secret` keys e a connection string — é o que vai no `.env.local` para dev local.
+- **`config.toml`** gerado por `supabase init` tem `project_id = "CroKoAI"` e `[db.seed]` →
+  `./seed.sql`. Versionado. `supabase/.gitignore` (gerado) ignora `.branches`/`.temp`/`.env*.local`.
+
+### MCP disponíveis nesta sessão (claude.ai) — crítico p/ Waves 2+
+
+- **Meta Ads = `mcp__claude_ai_CrokoMediaAdsMCP__*`** (NÃO um CLI `mcp-meta-ads`; a SPEC §10 chama
+  genericamente de "mcp-meta-ads"). Tools-chave: `list_ad_accounts`, `select_org`, `create_campaign`,
+  `create_adset`, `create_ad`, `create_ad_creative`, `get_insights`, `list_campaigns`, `update_*`,
+  `connect_meta`/`auth_status`. **Esse é o caminho da Meta na Wave 2.**
+- **⚠️ RISCO Wave 2/3:** MCPs autenticados via **claude.ai** (CrokoMediaAdsMCP, Supabase, Vercel,
+  Notion, Gmail, etc.) **podem não existir no runner headless/cron** do Fly.io (Wave 3). A skill de
+  tráfego (Wave 2) usa o MCP da Meta de forma interativa aqui; ao migrar p/ headless (Wave 3) é
+  preciso **confirmar como o runner autentica a Meta** (token próprio do MCP server? variável?). A
+  persistência no Supabase em headless **não** usa MCP — é **REST + `SUPABASE_SECRET_KEY`** (SPEC §10).
+- Também conectados: **Supabase MCP** (usei só p/ contexto; migrations foram via CLI), **Vercel MCP**
+  (deploy/logs — Wave 6), **higgsfield** (imagem/vídeo — alternativa ao gpt-image?), **claude_design**.
 
 ---
 
@@ -97,29 +143,44 @@
 
 ---
 
-## 6. Inventário do que existe (pós-Wave 0)
+## 6. Inventário do que existe (pós-Wave 1)
 
 ```
-.env.example          # contrato canônico de env (versionado)
-.env.local            # valores de dev (GITIGNORED) — preencher
+# --- Wave 0 (fundações) ---
+.env.example          # contrato canônico de env (versionado, 29 chaves)
+.env.local            # valores de dev (GITIGNORED) — preencher (ver §7)
 .gitignore
 package.json          # scripts: lint/typecheck/test/format; devDeps (eslint9, tseslint8, vitest2, prettier3, ts5.6)
 tsconfig.json         # strict + noUncheckedIndexedAccess + NodeNext
-eslint.config.mjs     # flat config
-.prettierrc.json / .prettierignore
-vitest.config.ts      # passWithNoTests:true; coverage em domain/application
+eslint.config.mjs · .prettierrc.json · .prettierignore · vitest.config.ts (passWithNoTests:true)
 CLAUDE.md             # convenções do PROJETO (≠ CLAUDE.md global da usuária)
-WAVES.md              # roadmap + status das 12 waves
-NOTES.md              # este arquivo
+WAVES.md · NOTES.md   # roadmap+status · este handoff
 src/env-contract.ts   # espelho tipado dos nomes de env
 .claude/rules/{security,testing,code-style}.md
-.claude/{skills,agents,hooks,materiais-das-empresas}/   # vazios (.gitkeep)
+.claude/{skills,agents,hooks,materiais-das-empresas}/   # vazios (.gitkeep) — preencher na Wave 2
 docs/README.md + docs/{adr,specs,how-to,reference,tutorials,explanation,security/threats,templates,sessions}/
   docs/templates/{adr-template,spec-template}.md
-  docs/adr/README.md + 18 stubs (0001..0025, status proposed)
+  docs/adr/README.md + 18 ADRs (0002/0003/0004/0009 = accepted; demais ainda stubs proposed)
   docs/specs/README.md (índice das 11 specs por wave)
-web/ packages/lp-render/ landing-pages/_template/ worker/track/ scripts/ supabase/migrations/  # vazios (.gitkeep)
+
+# --- Wave 1 (camada de dados) — NOVO ---
+supabase/config.toml          # gerado por `supabase init` (project_id=CroKoAI, [db.seed]→seed.sql)
+supabase/.gitignore           # gerado (ignora .branches/.temp/.env*.local)
+supabase/seed.sql             # seed cliente-exemplo (idempotente)
+supabase/migrations/          # 10 arquivos 20260622120000..120900 (20 tabelas, RLS, RPCs, buckets, lockdown)
+docs/specs/meta-ads-persistence-schema.md   # accepted
+docs/adr/000{2,3,4,9}-*.md                   # accepted
+docs/security/threats/supabase-data-layer.md # STRIDE da camada de dados
+scripts/verify-wave1.sql      # gate executável (RLS/claim/unique/append-only/buckets/seed)
+
+# --- ainda vazios (.gitkeep) ---
+web/ · packages/lp-render/ · landing-pages/_template/ · worker/track/
 ```
+
+**20 tabelas (public):** clients · campaigns/ad_sets/ads · creatives/generated_images ·
+analyses/metric_snapshots/analysis_findings/funnel_events · products/landing_pages/landing_page_sections ·
+agent_jobs/autonomous_watches/nexus_narrations · operation_logs/agent_events/daily_summaries/lp_events.
+**Buckets:** creatives, nexus-review (privados) · landing-assets, ad-ingest (públicos).
 
 > **NÃO confundir:** `CLAUDE.md` (raiz do repo, deste projeto) vs `~/.claude/CLAUDE.md` (global da
 > usuária, Synkra AIOS) — o global permanece intocado.
@@ -149,6 +210,19 @@ web/ packages/lp-render/ landing-pages/_template/ worker/track/ scripts/ supabas
    commit atômico (Conventional Commits, `[SPEC-000]`) → marcar ✅ em WAVES.md → **atualizar este
    NOTES.md**.
 4. Comandos de sanidade: `npm run typecheck && npm run lint && npm test`.
+
+### Quickstart do banco (Supabase local)
+
+```bash
+open -a Docker                       # subir o daemon do Docker (se DOWN), aguardar ~30-60s
+supabase start                       # sobe stack + aplica migrations + seed (1ª vez baixa imagens)
+supabase db reset                    # reaplica do zero (precisa do stack JÁ no ar)
+supabase stop                        # derruba o stack
+# rodar SQL (não há psql no host → usar o do container):
+docker exec -i supabase_db_CroKoAI psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f scripts/verify-wave1.sql
+```
+Git: commits sem config global → usar
+`git -c user.name=CroKoAI -c user.email=karlapazosvendas@gmail.com commit ...`.
 
 ---
 

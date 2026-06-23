@@ -5,7 +5,7 @@
 
 | Spec | Onda | Status | Descrição |
 |------|------|--------|-----------|
-| `meta-ads-persistence-schema.md` | 1 | draft | Schema Supabase (§6): tabelas, RLS, RPCs, buckets, seed |
+| `meta-ads-persistence-schema.md` | 1 | ✅ accepted | Schema Supabase (§6): tabelas, RLS, RPCs, buckets, seed |
 | `create-traffic-campaign.md` | 2 | draft | Skill de criação de campanha de tráfego PAUSED via MCP Meta |
 | `flyio-cron-campaign-runner.md` | 3 | draft | Runner Fly.io: supercronic + fila por polling + telemetria |
 | `meta-ads-funnel-analytics.md` | 4 | draft | Análise diária read-only + funil de 7 etapas |
