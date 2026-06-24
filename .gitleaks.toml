@@ -1,0 +1,42 @@
+# gitleaks config — secret scan do CI (SPEC-000 §8 Onda 11 · §11).
+#
+# Estende o conjunto de regras padrão do gitleaks e adiciona um allowlist para
+# os falsos-positivos legítimos deste repo: `.env.example` lista CHAVES sem
+# valores (contrato canônico), placeholders do template e exemplos de docs.
+# Gate: "nenhum segredo no diff" (SPEC-000 §12.6).
+
+title = "CroKoAI gitleaks"
+
+# Herdar as regras embutidas do gitleaks (AWS, GCP, tokens genéricos, etc.).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Falsos-positivos legítimos: contrato de env, placeholders e gitignore."
+
+# Caminhos que nunca contêm segredo real:
+#  - .env.example: chaves SEM valores (contrato versionado, SPEC §2/§7).
+#  - .env.local / .env*: gitignored; se aparecer, é só template de dev.
+#  - docs/**: specs/ADR/threat models citam NOMES de chaves, nunca valores.
+#  - package-lock.json: hashes de integridade (sha512-...) não são segredos.
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''(^|/)\.env(\..*)?\.local$''',
+  '''(^|/)\.env(\.example)?$''',
+  '''(^|/)package-lock\.json$''',
+  '''(^|/)docs/.*\.md$''',
+]
+
+# Padrões de placeholder do template (SPEC-000 §"Placeholders") e exemplos de
+# comandos de geração de credencial — texto, não segredo.
+regexes = [
+  '''cliente-exemplo''',
+  '''curso-exemplo''',
+  '''workshop-exemplo''',
+  '''example\.com''',
+  '''@template''',
+  '''claude-sonnet-4-6''',
+  # Comandos de exemplo no .env.example (gerar hash/secret), não valores reais.
+  '''openssl rand -base64''',
+  '''shasum -a 256''',
+]

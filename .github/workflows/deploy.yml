@@ -1,0 +1,91 @@
+# Deploy — dashboard (Vercel) + runner (Fly.io) (SPEC-000 §8 Onda 11).
+#
+# Gated por `main` (só após push aprovado) E pelo sucesso do CI (lint/typecheck/
+# test/secret-scan). Os dois planos são deploys INDEPENDENTES (SPEC-000 §3):
+#   - dashboard → Vercel (web/)
+#   - runner    → Fly.io (Dockerfile/fly.toml, app meta-ads-agents)
+#
+# REQUER SECRETS DO GITHUB CONFIGURADOS (referenciados por nome, sem valores):
+#   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID   → deploy do dashboard
+#   FLY_API_TOKEN                                    → deploy do runner
+# Sem esses secrets os jobs falham de propósito (fail-closed). Segredos de
+# RUNTIME (SUPABASE_*, AUTH_SECRET, etc.) vivem no Vercel/`fly secrets`, NÃO aqui.
+
+name: deploy
+
+on:
+  # Dispara só em push para main (após merge com CI verde).
+  push:
+    branches: [main]
+  # Permite deploy manual sob demanda.
+  workflow_dispatch:
+
+# Só um deploy por vez; não cancela um deploy em andamento.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  # --- Gate: CI tem de passar antes de qualquer deploy -----------------------
+  gate:
+    name: quality gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  deploy-dashboard:
+    name: deploy dashboard (Vercel)
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+      # Os 3 secrets abaixo precisam estar configurados no repositório/Org.
+      - name: Pull Vercel env (production)
+        run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Build (Vercel)
+        run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Deploy (Vercel, prebuilt)
+        run: vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  deploy-runner:
+    name: deploy runner (Fly.io)
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup flyctl
+        uses: superfly/fly-actions/setup-flyctl@master
+      # FLY_API_TOKEN precisa estar configurado nos secrets do repositório.
+      # Segredos de runtime do runner vão por `fly secrets set ...`, não aqui.
+      - name: Deploy to Fly
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

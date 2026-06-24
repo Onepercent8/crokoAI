@@ -1,0 +1,84 @@
+# CI — gate de qualidade obrigatório para merge (SPEC-000 §8 Onda 11 · §11).
+#
+# Espelha o gate raiz (package.json): `npm run lint`, `npm run typecheck`,
+# `npm test` já fazem fan-out nos workspaces (`--workspaces --if-present`) e
+# buildam as libs antes (`build:libs` → @template/lp-render, cujos dist/ os
+# dependentes consomem). + secret scan (gitleaks). Node fixado em 22 (o SPEC
+# pede 22; a máquina de dev tem 23/EBADENGINE — ver NOTES §4).
+#
+# CI verde é OBRIGATÓRIO para merge (configurar branch protection em main).
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancela execuções antigas do mesmo ref quando chega um novo push.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # `lint` raiz roda eslint + `lint --workspaces --if-present`.
+      - run: npm run lint
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # `typecheck` raiz já faz `build:libs` antes de `tsc --noEmit` + fan-out.
+      - run: npm run typecheck
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # `test` raiz já faz `build:libs` antes de `vitest run` + fan-out.
+      - run: npm test
+
+  secret-scan:
+    name: secret-scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks precisa do histórico completo para escanear o diff/commits.
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+          # GITLEAKS_LICENSE só é exigido em organizações; em repo pessoal/público
+          # o scan roda sem licença. Se a org pedir, configurar o secret abaixo.
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
