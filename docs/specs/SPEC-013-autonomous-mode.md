@@ -1,6 +1,6 @@
 # SPEC-013 — Modo autônomo do Nexus
 
-- **Status:** draft
+- **Status:** accepted (offline; e2e pendente de credenciais)
 - **Onda:** 9
 - **ADRs relacionados:** [0019](../adr/0019-modo-autonomo-nexus.md) ·
   [0020](../adr/0020-live-review.md) · [0009](../adr/0009-fila-agent-jobs.md) ·

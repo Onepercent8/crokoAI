@@ -1,6 +1,6 @@
 # ADR 0020 — Live review (revisão visual da landing page)
 
-- **Status:** proposed
+- **Status:** accepted
 - **Data:** 2026-06-23
 - **Onda:** 9
 

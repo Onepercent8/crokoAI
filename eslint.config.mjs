@@ -35,4 +35,23 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Runner-side CommonJS scripts (Playwright/Resend/REST helpers). They run in
+    // Node, not in a workspace bundle, so declare CommonJS + Node globals.
+    files: ['scripts/**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        require: 'readonly',
+        module: 'writable',
+        process: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 );

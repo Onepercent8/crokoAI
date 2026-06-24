@@ -13,6 +13,10 @@ import {
 } from '@/lib/auth/session';
 import { isTurnstileEnabled, verifyTurnstile } from '@/lib/auth/turnstile';
 import { getServerEnv } from '@/lib/env';
+import { applyFieldEdit, EditRequestSchema, editOutcomeStatus } from '@/lib/api/landing-pages';
+import { supabaseLandingEditorRepository } from '@/lib/api/landing-rest-repository';
+import { buildLandingJob, enqueueLandingJob, resolveLandingSkill } from '@/lib/api/landing-publish';
+import { supabaseLandingJobInserter } from '@/lib/api/landing-publish-inserter';
 import {
   CaptureRequest,
   ChatRequest,
@@ -135,6 +139,8 @@ app.use('/campaigns', operatorGuard);
 app.use('/analyses', operatorGuard);
 app.use('/funnel', operatorGuard);
 app.use('/logs/*', operatorGuard);
+// Landing-page editor (Onda 9): every mutation requires an operator session.
+app.use('/landing-pages/*', operatorGuard);
 // Every Nexus route requires a valid operator session (no anonymous access).
 app.use('/nexus/*', operatorGuard);
 
@@ -218,6 +224,82 @@ app.get('/logs/events', async (c) => {
     return c.json({ error: 'invalid_request' }, 400);
   }
   return c.json({ events: await listAgentEvents(parsed.data.runId) });
+});
+
+// --- Landing-page editor (Wave 9, SPEC-012) ---------------------------------
+//
+// PATCH /api/landing-pages/:id/sections/:type — synchronous draft edit.
+// Order: auth (operatorGuard) -> rate limit -> Zod validation -> reconcile +
+// optimistic UPDATE. Editing NEVER publishes; it only mutates the draft section
+// (version+1). Publishing stays a separate queued `landing_publish` job.
+
+const lpIdSchema = z.string().uuid();
+
+app.patch('/landing-pages/:id/sections/:type', async (c) => {
+  // validation (Zod) — the body and the path params are DATA, not instruction.
+  const idParsed = lpIdSchema.safeParse(c.req.param('id'));
+  if (!idParsed.success) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  // Rate-limit per session id to cap patch floods (reuses the Nexus limiter).
+  const limited = await nexusRateGate(idParsed.data);
+  if (limited) {
+    return limited;
+  }
+  const body = await c.req.json().catch(() => null);
+  const parsed = EditRequestSchema.safeParse({
+    ...(body as Record<string, unknown> | null),
+    sectionType: c.req.param('type'),
+  });
+  if (!parsed.success) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+
+  // logic: reconcile (whole-section validation) + optimistic persist.
+  const outcome = await applyFieldEdit(supabaseLandingEditorRepository, idParsed.data, parsed.data);
+  const status = editOutcomeStatus(outcome);
+  if (outcome.status === 'updated') {
+    return c.json({ section: outcome.section }, status);
+  }
+  if (outcome.status === 'invalid') {
+    // Surface Zod issues (paths + messages only; no internals/PII).
+    return c.json(
+      {
+        error: 'invalid_section',
+        issues: outcome.issues.map((i) => ({ path: i.path, message: i.message })),
+      },
+      status,
+    );
+  }
+  return c.json({ error: outcome.status }, status);
+});
+
+// POST /api/landing-pages/:id/publish — enqueue the heavy publish job.
+// Editing is synchronous; publishing is a SEPARATE queued job (ADR 0009). The
+// skill name is resolved server-side from a fixed kind (never free text).
+app.post('/landing-pages/:id/publish', async (c) => {
+  const idParsed = lpIdSchema.safeParse(c.req.param('id'));
+  if (!idParsed.success) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  const limited = await nexusRateGate(idParsed.data);
+  if (limited) {
+    return limited;
+  }
+  const resolved = resolveLandingSkill('landing_publish');
+  if (resolved === null) {
+    return c.json({ error: 'invalid_request' }, 400);
+  }
+  const row = buildLandingJob({
+    landingPageId: idParsed.data,
+    kind: resolved.kind,
+    skill: resolved.skill,
+  });
+  const outcome = await enqueueLandingJob(supabaseLandingJobInserter, row);
+  if (outcome.status === 'queued') {
+    return c.json({ agent_job_id: outcome.agent_job_id, status: 'queued' }, 202);
+  }
+  return c.json({ status: 'already_queued' }, 409);
 });
 
 // --- Nexus assistant (Wave 7, SPEC-016) -------------------------------------

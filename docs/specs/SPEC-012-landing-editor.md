@@ -1,6 +1,6 @@
 # SPEC-012 — Editor de landing page no dashboard
 
-- **Status:** draft
+- **Status:** accepted (offline; e2e pendente de credenciais)
 - **Onda:** 9
 - **ADRs relacionados:** [0015](../adr/0015-lp-editavel-no-supabase.md) ·
   [0017](../adr/0017-pacote-lp-render.md) · [0009](../adr/0009-fila-agent-jobs.md) ·

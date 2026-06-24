@@ -1,6 +1,6 @@
 # SPEC-014 — Live review (captura visual + opinião da landing page)
 
-- **Status:** draft
+- **Status:** accepted (offline; e2e pendente de credenciais)
 - **Onda:** 9
 - **ADRs relacionados:** [0020](../adr/0020-live-review.md) ·
   [0019](../adr/0019-modo-autonomo-nexus.md) · [0012](../adr/0012-landing-cloudflare-pages.md)

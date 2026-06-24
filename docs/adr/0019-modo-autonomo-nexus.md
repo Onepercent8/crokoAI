@@ -1,6 +1,6 @@
 # ADR 0019 — Modo autônomo do Nexus
 
-- **Status:** proposed
+- **Status:** accepted
 - **Data:** 2026-06-23
 - **Onda:** 9
 

@@ -1,0 +1,45 @@
+{
+  "slug": "autonomous-watch-tick",
+  "kind": "autonomous_watch_tick",
+  "wave": 9,
+  "spec": "docs/specs/SPEC-013-autonomous-mode.md",
+  "headless_safe": true,
+  "uses_ask_user_question": false,
+  "phase_machine": {
+    "states": ["watching", "reviewing", "notifying", "done", "failed"],
+    "monotonic": true,
+    "max_narrations_per_tick": 1
+  },
+  "idempotency": {
+    "mode": "cursors",
+    "cursors": ["last_event_ts", "last_narrated_milestone"]
+  },
+  "claim_rpc": "claim_autonomous_watch",
+  "logic_module": "web/lib/nexus/autonomous-mode.ts",
+  "persistence": {
+    "mode": "supabase-rest",
+    "auth_env": ["SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+    "uses_supabase_mcp": false,
+    "reads_tables": ["autonomous_watches", "agent_jobs", "agent_events"],
+    "writes_tables": ["autonomous_watches", "nexus_narrations", "operation_logs"]
+  },
+  "live_review": {
+    "spec": "docs/specs/SPEC-014-live-review.md",
+    "screenshot_script": "scripts/screenshot-page.cjs",
+    "ssrf_allowlist_suffix": ".example.com",
+    "frame_bucket": "nexus-review"
+  },
+  "notify": {
+    "email_script": "scripts/send-email.cjs",
+    "best_effort": true,
+    "degrades_to_log": true,
+    "env": ["RESEND_API_KEY", "AUTONOMOUS_FROM_EMAIL", "AUTONOMOUS_NOTIFY_EMAIL"]
+  },
+  "poller": "scripts/poll-autonomous-watches.sh",
+  "manifest_dir": "tentativas-geracao-de-campanhas",
+  "args_schema": {
+    "watchId": "uuid (optional; claims next active watch if absent)",
+    "worker": "^[a-zA-Z0-9_-]{1,64}$ (required)"
+  },
+  "status": "scaffold"
+}
