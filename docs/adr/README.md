@@ -12,6 +12,8 @@
 | 0004 | Schema de análise | 1/4 | ✅ accepted |
 | 0005 | Dashboard no Vercel | 6 | proposed |
 | 0006 | Auth do dashboard | 6 | proposed |
+| 0007 | Revalidação fail-closed na ativação de campanha | 5 | proposed |
+| 0008 | Reuso de criativos vencedores na campanha de vendas | 5 | proposed |
 | 0009 | Fila `agent_jobs` por polling (sem broker) | 1/3 | ✅ accepted |
 | 0012 | Landing pages no Cloudflare Pages | 8 | proposed |
 | 0013 | Design system da landing page | 8 | proposed |

@@ -129,3 +129,93 @@ export interface MetaAdsPort {
   createCreative(spec: MetaCreativeSpec): Promise<{ meta_creative_id: string }>;
   createAd(spec: MetaAdSpec): Promise<{ meta_ad_id: string }>;
 }
+
+/* ------------------------------------------------------------------ *
+ *  Wave 5 — activation                                                *
+ * ------------------------------------------------------------------ */
+
+/** Live Meta entity state read back before activation (read side). */
+export interface MetaEntityState {
+  meta_entity_id: string;
+  ad_account_id: string;
+  /** Current effective status reported by Meta (e.g. PAUSED/ACTIVE). */
+  status: string;
+  daily_budget_cents: Cents;
+}
+
+/**
+ * Activation boundary (wave 5): READ the entity back, then turn it ON.
+ *
+ * Surface is deliberately MINIMAL — only `getEntity` (read) + `activateEntity`
+ * (the single mutation strictly required to flip a PAUSED entity to ACTIVE).
+ * No pause/delete/budget-change is exposed, so the activation skill can do
+ * nothing beyond what it is for. The adapter wraps `mcp-meta-ads`.
+ */
+export interface MetaActivationPort {
+  /** Re-read the entity from Meta for fail-closed revalidation. */
+  getEntity(metaEntityId: string): Promise<MetaEntityState>;
+  /** Flip a PAUSED entity to ACTIVE; returns the new effective status. */
+  activateEntity(metaEntityId: string): Promise<{ status: string }>;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Wave 5 — sales campaign                                            *
+ * ------------------------------------------------------------------ */
+
+/** One existing creative with its window performance (read side). */
+export interface WinningCreative {
+  meta_creative_id: string;
+  purchases: number;
+  purchase_value_cents: number;
+}
+
+/**
+ * Sales campaign spec (OUTCOME_SALES). The campaign is ALWAYS born PAUSED; the
+ * conversion event is the pixel PURCHASE on the client's dataset/pixel.
+ */
+export interface MetaSalesCampaignSpec {
+  ad_account_id: string;
+  objective: 'OUTCOME_SALES';
+  budget_mode: 'CBO' | 'ABO';
+  daily_budget_cents: Cents;
+  status: 'PAUSED';
+  special_ad_categories: string[];
+}
+
+/**
+ * Sales ad-set spec. GOTCHA (SPEC-000 §10): for OUTCOME_SALES the
+ * `destination_type` field is OMITTED entirely (Meta v25) — it is intentionally
+ * absent from this interface so it cannot be sent by accident. The pixel +
+ * PURCHASE event drive optimization instead.
+ */
+export interface MetaSalesAdSetSpec {
+  meta_campaign_id: string;
+  optimization_goal: 'OFFSITE_CONVERSIONS';
+  billing_event: string;
+  /** The client's conversion dataset/pixel id (text). */
+  pixel_id: string;
+  /** Custom-conversion / standard event optimized for: always PURCHASE here. */
+  custom_event_type: 'PURCHASE';
+  targeting: Record<string, unknown>;
+  advantage_audience: boolean;
+  advantage_placements: boolean;
+}
+
+/**
+ * Sales Meta boundary (wave 5): list winning creatives (read) and create the
+ * OUTCOME_SALES hierarchy reusing existing creative ids (no creative creation).
+ */
+export interface MetaSalesPort {
+  /** Read existing creatives + their purchases over a window (read-only). */
+  listWinningCreatives(clientSlug: string, windowDays: number): Promise<WinningCreative[]>;
+  createSalesCampaign(spec: MetaSalesCampaignSpec): Promise<{ meta_campaign_id: string }>;
+  createSalesAdSet(spec: MetaSalesAdSetSpec): Promise<{ meta_ad_set_id: string }>;
+  /** Reuse an existing winning creative id in a new sales ad. */
+  createSalesAd(spec: MetaAdSpec): Promise<{ meta_ad_id: string }>;
+}
+
+/** The `clients` row fields the sales skill needs (adds pixel_id over base). */
+export interface SalesClientRecord extends ClientRecord {
+  /** Conversion dataset/pixel id for the PURCHASE event (text, from Meta). */
+  pixel_id: string;
+}

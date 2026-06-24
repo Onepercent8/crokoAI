@@ -1,0 +1,43 @@
+{
+  "slug": "create-sales-cliente-exemplo-campaign",
+  "kind": "create_sales",
+  "wave": 5,
+  "spec": "docs/specs/meta-ads-activation-and-sales.md",
+  "headless_safe": true,
+  "uses_ask_user_question": false,
+  "client_slug": "cliente-exemplo",
+  "objective": "OUTCOME_SALES",
+  "conversion_event": "PURCHASE",
+  "omits_destination_type": true,
+  "campaign_status_on_create": "PAUSED",
+  "reuses_winning_creatives": true,
+  "persistence": {
+    "mode": "supabase-rest",
+    "auth_env": ["SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+    "uses_supabase_mcp": false,
+    "writes_tables": ["campaigns", "ad_sets", "ads", "operation_logs"]
+  },
+  "meta_writes_via": "mcp-meta-ads",
+  "library": "@template/skill-kit",
+  "selection": {
+    "function": "selectTopCreatives",
+    "rank_by": "purchases",
+    "excludes_zero_purchases": true,
+    "tie_break": ["purchase_value_cents", "meta_creative_id"]
+  },
+  "idempotency": {
+    "key_source": "arg-or-derived",
+    "derived_from": ["client_slug", "product_slug", "utc-day"]
+  },
+  "manifest_dir": "tentativas-geracao-de-campanhas",
+  "args_schema": {
+    "client_slug": "slug ^[a-z0-9-]+$ (required)",
+    "product_slug": "slug ^[a-z0-9-]+$ (required)",
+    "daily_budget_cents": "integer cents, positive (optional, clamped to cap)",
+    "budget_mode": "CBO | ABO (default CBO)",
+    "top_n": "integer 1..10 (default 3)",
+    "window_days": "integer 1..90 (default 14)",
+    "idempotency_key": "string >= 8 chars (optional, derived if absent)"
+  },
+  "status": "scaffold"
+}

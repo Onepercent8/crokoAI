@@ -50,6 +50,44 @@ export const CreateTrafficArgsSchema = z.object({
 });
 export type CreateTrafficArgs = z.infer<typeof CreateTrafficArgsSchema>;
 
+/**
+ * activate-campaign args (wave 5). The target is a Meta entity id (text); only
+ * the entity to flip ON is needed. Idempotency defaults to a deterministic key.
+ * The entity id is treated as data: its charset is restricted so it can never be
+ * abused as an instruction or path component.
+ */
+export const ActivateArgsSchema = z.object({
+  client_slug: z.string().regex(SLUG_PATTERN),
+  /** The Meta entity id to activate (campaign/ad_set/ad), restricted charset. */
+  meta_entity_id: z
+    .string()
+    .min(1)
+    .max(120)
+    .regex(/^[A-Za-z0-9_:-]+$/, 'meta_entity_id has invalid charset'),
+  /** What level the entity is, used only for the operation_log/audit trail. */
+  entity_type: z.enum(['campaign', 'ad_set', 'ad']).default('campaign'),
+  idempotency_key: z.string().min(8).optional(),
+});
+export type ActivateArgs = z.infer<typeof ActivateArgsSchema>;
+
+/**
+ * create-sales-campaign args (wave 5). Reuses top-N winning creatives by
+ * purchases over `window_days` for an OUTCOME_SALES campaign (pixel PURCHASE).
+ */
+export const CreateSalesArgsSchema = z.object({
+  client_slug: z.string().regex(SLUG_PATTERN),
+  product_slug: z.string().regex(SLUG_PATTERN),
+  // Optional override; clamped to the client cap after lookup (never above it).
+  daily_budget_cents: z.number().int().positive().optional(),
+  budget_mode: z.enum(['CBO', 'ABO']).default('CBO'),
+  /** How many winning creatives to reuse (1..10). */
+  top_n: z.number().int().positive().max(10).default(3),
+  /** Lookback window for ranking winners, in days (1..90). */
+  window_days: z.number().int().positive().max(90).default(14),
+  idempotency_key: z.string().min(8).optional(),
+});
+export type CreateSalesArgs = z.infer<typeof CreateSalesArgsSchema>;
+
 /** scrape-extractor output: landing_url -> structured facts. */
 export const ScrapeFactsSchema = z.object({
   product_name: z.string(),

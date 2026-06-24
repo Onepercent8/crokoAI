@@ -11,6 +11,7 @@ export * from './domain/money.js';
 export * from './domain/slug.js';
 export * from './domain/schemas.js';
 export * from './domain/meta-guards.js';
+export * from './domain/creative-selection.js';
 export * from './domain/idempotency.js';
 export * from './domain/manifest.js';
 export * from './domain/operation-log.js';
@@ -21,6 +22,9 @@ export * from './application/build-rows.js';
 export * from './application/check-idempotency.js';
 export * from './application/ports.js';
 export * from './application/orchestrate-traffic.js';
+// activation + sales (wave 5)
+export * from './application/orchestrate-activation.js';
+export * from './application/orchestrate-sales.js';
 // analytics (wave 4)
 export * from './domain/funnel.js';
 export * from './domain/verdict.js';

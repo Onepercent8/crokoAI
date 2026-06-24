@@ -14,7 +14,8 @@ import type { TableRow } from '../infrastructure/supabase-rest.js';
 export interface BuildCampaignRowInput {
   client_id: string;
   meta_campaign_id: string;
-  objective: 'OUTCOME_TRAFFIC';
+  /** Traffic (wave 2) or sales (wave 5). */
+  objective: 'OUTCOME_TRAFFIC' | 'OUTCOME_SALES';
   budget_mode: 'CBO' | 'ABO';
   daily_budget_cents: Cents;
   special_ad_categories?: string[];

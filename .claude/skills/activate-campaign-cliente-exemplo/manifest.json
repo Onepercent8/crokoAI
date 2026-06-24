@@ -1,0 +1,38 @@
+{
+  "slug": "activate-campaign-cliente-exemplo",
+  "kind": "activate",
+  "wave": 5,
+  "spec": "docs/specs/meta-ads-activation-and-sales.md",
+  "headless_safe": true,
+  "uses_ask_user_question": false,
+  "client_slug": "cliente-exemplo",
+  "meta_access": "read-and-activate-only",
+  "fail_closed": true,
+  "starts_real_spend": true,
+  "persistence": {
+    "mode": "supabase-rest",
+    "auth_env": ["SUPABASE_URL", "SUPABASE_SECRET_KEY"],
+    "uses_supabase_mcp": false,
+    "writes_tables": ["operation_logs"]
+  },
+  "meta_writes_via": "mcp-meta-ads",
+  "library": "@template/skill-kit",
+  "revalidation": {
+    "guard": "assertActivationSafe",
+    "checks": ["entity_matches_intended", "same_ad_account", "status_paused", "within_budget_cap"],
+    "on_doubt": "abort"
+  },
+  "idempotency": {
+    "key_source": "arg-or-derived",
+    "already_active": "skip"
+  },
+  "manifest_dir": "tentativas-geracao-de-campanhas",
+  "args_schema": {
+    "client_slug": "slug ^[a-z0-9-]+$ (required)",
+    "meta_entity_id": "text ^[A-Za-z0-9_:-]+$ (required)",
+    "entity_type": "campaign | ad_set | ad (default campaign)",
+    "idempotency_key": "string >= 8 chars (optional, derived if absent)"
+  },
+  "operation_log_action": "activate",
+  "status": "scaffold"
+}

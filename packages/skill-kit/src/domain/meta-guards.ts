@@ -43,6 +43,65 @@ export function assertCampaignSpecSafe(input: CampaignSpecGuardInput): void {
 }
 
 /**
+ * Live Meta entity state read back BEFORE an activation (wave 5).
+ *
+ * The activation skill NEVER trusts its args alone: it re-reads the entity from
+ * Meta and revalidates the invariants below. `daily_budget_cents` is integer
+ * cents; `status` is the current effective status as reported by Meta.
+ */
+export interface ActivationProbe {
+  /** The Meta entity id we intend to activate. */
+  meta_entity_id: string;
+  /** Owning ad account, as reported by Meta (must match the client). */
+  ad_account_id: string;
+  /** Current effective status from Meta (must be PAUSED to activate). */
+  status: string;
+  /** Current daily budget in integer cents (must be <= the client cap). */
+  daily_budget_cents: Cents;
+}
+
+/** What the activation skill knows about the client + intended target. */
+export interface ActivationContext {
+  /** The ad account the client is allowed to operate (allowlist server-side). */
+  client_ad_account_id: string;
+  /** Hard daily cap for the client (integer cents). */
+  daily_budget_cap_cents: Cents;
+  /** The entity id the operator/job asked to activate (intended target). */
+  intended_entity_id: string;
+}
+
+/**
+ * Fail-closed revalidation BEFORE flipping a campaign on (wave 5, SPEC §8).
+ *
+ * Aborts (throws) on ANY doubt — this is the only write in the system that turns
+ * on real spend, so every invariant must hold:
+ *  - the probed entity is the one we intended to activate (no target swap);
+ *  - it belongs to the correct client ad account (no cross-client activation);
+ *  - it is currently PAUSED (we only ever turn ON something that is OFF);
+ *  - its current daily budget is within the client cap (no over-cap spend).
+ *
+ * Returns void on success; throws otherwise. There is NO "force" path.
+ */
+export function assertActivationSafe(probe: ActivationProbe, context: ActivationContext): void {
+  if (probe.meta_entity_id !== context.intended_entity_id) {
+    throw new Error('Failed to guard activation: probed entity does not match intended target');
+  }
+  if (probe.ad_account_id !== context.client_ad_account_id) {
+    throw new Error('Failed to guard activation: entity belongs to a different ad account');
+  }
+  if (probe.status !== CAMPAIGN_STATUS_PAUSED) {
+    throw new Error(
+      `Failed to guard activation: entity must be PAUSED to activate, got "${probe.status}"`,
+    );
+  }
+  if (probe.daily_budget_cents > context.daily_budget_cap_cents) {
+    throw new Error(
+      'Failed to guard activation: daily_budget_cents exceeds daily_budget_cap_cents',
+    );
+  }
+}
+
+/**
  * Build the inline-image field for a creative's link_data.
  *
  * Gotcha §10: the image goes inline in `link_data.picture` as the PUBLIC URL of
