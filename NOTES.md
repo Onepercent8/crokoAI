@@ -237,6 +237,19 @@ agent_jobs/autonomous_watches/nexus_narrations · operation_logs/agent_events/da
 - [ ] **Wave 2 precisa:** MCP da Meta (`CrokoMediaAdsMCP`/`mcp-meta-ads`) autenticado +
       `materiais-das-empresas/cliente-exemplo/` (logo, fotos, brief `produtos/<slug>.json`) +
       catálogo `lista-de-clientes`/`lista-de-produtos` para destravar o e2e da 1ª skill.
+- [x] ~~**CI (W11) nunca executado de verdade**~~ — **validado em 2026-06-24**: push da `main`
+      disparou os workflows `ci` e `deploy`. **`ci` (lint·typecheck·test·gitleaks) = success** e o
+      **`deploy → quality gate` (lint·typecheck·test) = success**. Bug encontrado e corrigido: action
+      do Fly era `superfly/fly-actions` (inexistente) → `superfly/flyctl-actions` (commit `abd6921`).
+      Actions bumpadas `checkout@v4→v5` / `setup-node@v4→v5` (warning de Node 20). `gitleaks-action`
+      fica em `@v2` (major mais recente; warning de Node é upstream).
+- [ ] **Deploy bloqueado SÓ por secrets (configurar no GitHub → Settings → Secrets and variables →
+      Actions → repository secrets):** ambos os jobs de `deploy` falham apenas por falta de credencial.
+      - **deploy dashboard (Vercel):** `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+      - **deploy runner (Fly.io):** `FLY_API_TOKEN`.
+      A action do Fly já resolve (`Setup flyctl` ✓); falha só no passo `Deploy to Fly` por token ausente.
+      Obs.: o job `deploy` usa `environment: production` — os secrets podem ficar no Environment
+      `production` (Settings → Environments) em vez de repository secrets, se preferir gate de aprovação.
 - [ ] **Gates bloqueados por credencial (do build paralelo 2026-06-23):**
       - **W6 dashboard:** chaves do projeto **CrokoAI** no env (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
         `NEXT_PUBLIC_SUPABASE_URL`, publishable key) + `AUTH_SECRET` (≥32B) + `DASHBOARD_PASSWORD`
