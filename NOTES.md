@@ -5,12 +5,16 @@
 > Fontes irmãs: [`SPEC-000-build-from-scratch.md`](./SPEC-000-build-from-scratch.md) (a planta),
 > [`WAVES.md`](./WAVES.md) (roadmap + status), [`CLAUDE.md`](./CLAUDE.md) (convenções).
 >
-> **Última atualização:** 2026-06-23 · **Wave atual:** 1 ✅ + **build paralelo (2 levas)** das ondas
-> 2/3/4/6/7/8/10 — implementação **offline** integrada na `main`, gate global verde, status 🟡
-> (e2e pendente de credenciais). Restam ⬜: 5 (sem spec), 9 (integração web+skill+landing), 11 (CI/hardening).
-> Próximo: destravar gates com credenciais **ou** fase 2 (specar W5, implementar W9, hardening W11).
+> **Última atualização:** 2026-06-24 · **Wave atual:** 1 ✅ + **build paralelo (3 levas)** das ondas
+> 2/3/4/5/6/7/8/9/10/11 — implementação **offline** integrada na `main`, gate global verde
+> (lint ✓ · typecheck ✓ · test ✓ · **427 testes**), status 🟡 (e2e pendente de credenciais).
+> **Não resta nenhuma onda ⬜** — todas as 11 estão offline-completas; falta só destravar os gates de
+> operação real com credenciais (§7) e marcar ✅.
+> Próximo: destravar gates com credenciais (env CrokoAI, Meta MCP headless + materiais, Fly, Cloudflare,
+> OpenAI/ElevenLabs) **ou** revisar o e2e onda a onda.
 > **Commits:** 5 + 1ª leva (specs/ADRs · workspaces · scaffolds · tema Croko) + 2ª leva (9 commits de
-> ondas via 3 worktrees/agents + 2 de integração: limpeza de import + ordenação de build:libs).
+> ondas via 3 worktrees/agents + 2 de integração) + **3ª leva (3 commits W5/W9/W11 via 3 worktrees/agents,
+> cherry-pick limpo na main)**.
 
 ---
 

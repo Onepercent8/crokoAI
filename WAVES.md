@@ -29,13 +29,13 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 | 2 | Runtime de skills + 1ª skill (tráfego) | 🟡 | spec create-traffic-campaign |
 | 3 | Runner Fly.io (cron + fila) | 🟡 | ADR 0001/0009 · spec flyio-cron-campaign-runner |
 | 4 | Analytics (funil + resumo diário) | 🟡 | ADR 0024/0025 · spec meta-ads-funnel-analytics |
-| 5 | Ativação + campanha de vendas | ⬜ | — |
+| 5 | Ativação + campanha de vendas | 🟡 | ADR 0007/0008 · spec meta-ads-activation-and-sales |
 | 6 | Dashboard (Vercel) + auth | 🟡 | ADR 0005/0006 · spec web-dashboard-nexus |
 | 7 | Assistente de voz Nexus | 🟡 | SPEC-016 voice chat |
 | 8 | Sistema de landing pages | 🟡 | ADR 0012/0013/0015/0017 · SPEC-011 |
-| 9 | Editor de LP + modo autônomo | ⬜ | ADR 0019/0020 · SPEC-012/013/014 |
+| 9 | Editor de LP + modo autônomo | 🟡 | ADR 0019/0020 · SPEC-012/013/014 |
 | 10 | Tracking server-side (Cloudflare Worker) | 🟡 | ADR 0021 · SPEC-015 |
-| 11 | Hardening, observabilidade & CI/CD | ⬜ | docs/security/threats/* |
+| 11 | Hardening, observabilidade & CI/CD | 🟡 | docs/security/threats/* · .github/workflows · vercel.json |
 
 > **Build paralelo — 1ª leva (2026-06-23).** Specs + ADRs **redigidos** para as ondas
 > 2, 3, 4, 6, 7, 8, 9, 10 (status `draft`/`proposed`). **Scaffolds offline** entregues e com gate
@@ -51,6 +51,16 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 > Todas seguem 🟡 **em progresso**, não ✅: o **e2e** depende de credenciais externas (Meta MCP headless +
 > materiais, env CrokoAI, Fly, Cloudflare, OpenAI/ElevenLabs — ver `NOTES.md` §7). Identidade visual Croko
 > aplicada como tema default em `web/` e `lp-render` (camada visual; placeholders textuais mantidos).
+>
+> **Build paralelo — 3ª leva (2026-06-24, 3 worktrees + agents).** Implementação **offline** das 3 ondas
+> que ainda eram ⬜ (pré-requisitos offline-completos), em frentes disjuntas, integradas na `main` por
+> cherry-pick com gate global verde (lint ✓ · typecheck ✓ · test ✓ · **427 testes**):
+> **W5** ativação fail-closed + vendas (OUTCOME_SALES sem `destination_type`, reuso top-N criativos) em
+> `skill-kit` (+29 testes, total 165) + 2 skills · **W9** editor de LP (Zod por seção reusando
+> `SECTION_FIELD_SCHEMAS`, edit-path/reconcile) + modo autônomo do Nexus (máquina de fases, ≤1 narração/tick)
+> em `web/` (+88 testes, total 145) + skill `autonomous-watch-tick` + scripts · **W11** 4 threat models STRIDE +
+> CI GitHub Actions (lint/typecheck/test/gitleaks) + `vercel.json` + deploy gated + `.nvmrc`. Seguem 🟡:
+> e2e/credenciais e CI nunca executado de verdade (ver `NOTES.md` §7).
 
 ---
 
@@ -101,7 +111,7 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 - **Gate:** rodar grava 1 `analyses` + N `metric_snapshots` + findings + 7 `funnel_events`/entidade;
   **nenhuma mutação** Meta; manifest escrito.
 
-### Onda 5 — Ativação + campanha de vendas  ⬜
+### Onda 5 — Ativação + campanha de vendas  🟡
 - **Objetivo:** colocar campanha no ar (gasto real, confirmado) + campanha de vendas reusando top criativos.
 - **Entregáveis:** skills `activate-campaign-<cliente>` (kind `activate`) e
   `create-sales-<cliente>-campaign` (kind `create_sales`, OUTCOME_SALES, pixel PURCHASE).
@@ -132,7 +142,7 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
 - **Gate:** create grava rascunho + job `landing_publish`; publish builda e serve 200 em preview;
   `_template` builda verde.
 
-### Onda 9 — Editor de LP + modo autônomo do Nexus  ⬜
+### Onda 9 — Editor de LP + modo autônomo do Nexus  🟡
 - **Objetivo:** editar a LP pelo dashboard + Nexus narrar/revisar tarefas longas sozinho.
 - **Entregáveis:** editor `components/landing/*` + API de edição (Zod por seção, `edit-path`,
   `reconcile`); `lib/nexus/{autonomous-mode,review-frame,live-review}`; skill
@@ -147,7 +157,7 @@ Ondas 2 e 6 podem começar em paralelo após a 1; 3 precede a operação real (c
   fan-out CAPI/GA4/Google Ads, escrita em `lp_events`); `wrangler.toml` (`track.example.com`); ADR.
 - **Gate:** POST `/e` valida origem, grava `lp_events` e responde; **sem PII** em `lp_events`.
 
-### Onda 11 — Hardening, observabilidade & CI/CD  ⬜
+### Onda 11 — Hardening, observabilidade & CI/CD  🟡
 - **Objetivo:** produção com segurança, testes e pipelines.
 - **Entregáveis:** threat models STRIDE em `docs/security/threats/`; rate limits revisados; logs
   estruturados sem PII + correlation/run ids; testes (pirâmide); GitHub Actions
