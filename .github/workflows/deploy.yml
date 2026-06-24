@@ -82,7 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup flyctl
-        uses: superfly/fly-actions/setup-flyctl@master
+        uses: superfly/flyctl-actions/setup-flyctl@master
       # FLY_API_TOKEN precisa estar configurado nos secrets do repositório.
       # Segredos de runtime do runner vão por `fly secrets set ...`, não aqui.
       - name: Deploy to Fly
